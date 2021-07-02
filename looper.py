@@ -41,12 +41,17 @@ class EventHandler:
 	def add_event(self, event):
 		if isinstance(event, ButtonPress):
 			self.button_presses.append(event)
+		elif isinstance(event, Boot):
+			self.boot = event
 	
 	def emit_event(self, event_type):
 		if event_type == ButtonPress:
 			# TODO: raise error if not expecting press
 			press = self.button_presses.pop(0)
 			press.emit()
+		elif event_type == Boot:
+			# TODO: raise error if already booted
+			self.boot.emit()
 	
 	def is_expecting_event(self, event_type):
 		if event_type == ButtonPress:
@@ -81,6 +86,10 @@ class Event:
 
 
 class ButtonPress(Event):
+	pass
+
+
+class Boot(Event):
 	pass
 
 
@@ -119,6 +128,7 @@ class Program:
 		server.start()
 		for snippet in self.snippets:
 			snippet._instantiate_pyo_objects()
+		_handler.emit_event(Boot)
 		while True:
 			wait()
 			_handler.emit_event(ButtonPress)
