@@ -102,14 +102,14 @@ class Source:
 class Input(Source):
 	@property
 	def raw(self):
-		return pyo.Input(chnl=1).mix(2).out()
+		return pyo.Input(chnl=1).mix(2)
 
 
 class Program:
 	def __init__(self):
 		self.snippets = []
 	
-	def add_snippet(self, **kwargs):
+	def add_snippet(self, source, monitoring = True, **kwargs):
 		# only does dependent length snippets and fixed length snippets as of now,
 		# not cloned snippets
 		if 'dur' in kwargs and 'end' in kwargs:
@@ -117,9 +117,9 @@ class Program:
 		elif not 'dur' in kwargs and not 'end' in kwargs:
 			exit('oh no, must have `dur` or `end` in args')
 		elif 'end' in kwargs:
-			snippet = DependentLengthSnippet(**kwargs)
+			snippet = DependentLengthSnippet(source, monitoring, recording = False, **kwargs)
 		elif 'dur' in kwargs:
-			snippet = FixedLengthSnippet(**kwargs)
+			snippet = FixedLengthSnippet(source, monitoring, recording = False, **kwargs)
 		self.snippets.append(snippet)
 		return snippet
 	
@@ -141,22 +141,40 @@ class Program:
 
 
 class Snippet:
+	def on(self):
+		if self.monitoring:
+			self._raw_source.out()
+		if self.recording:
+			self.start_recording()
+	
+	def off(self):
+		if self.monitoring:
+			self._raw_source.stop()
+		if self.recording:
+			self.stop_recording()
+	
 	@property
 	def dur(self):
 		return self.end.time - self.start.time
 
 
 class DependentLengthSnippet(Snippet):
-	def __init__(self, start, end = None):
-		self.source = Input()
+	def __init__(self, source, monitoring, recording, start, end):
+		self.source = source
+		self.monitoring = monitoring
+		self.recording = recording
 		self.start = start
 		self.end = end
-		self.start.add_action(self.start_recording)
-		self.end.add_action(self.stop_recording, self.start_playback)
+#		self.start.add_action(self.start_recording)
+#		self.end.add_action(self.stop_recording, self.start_playback)
+		self.start.add_action(self.on)
+		self.end.add_action(self.off)
 	
 	def _instantiate_pyo_objects(self):
-		self.template_table = pyo.NewTable(_snippet_init_length, chnls=2)
-		self.recorder = pyo.TableRec(self.source.raw, self.template_table)
+		self._raw_source = self.source.raw
+		if self.recording:
+			self.template_table = pyo.NewTable(_snippet_init_length, chnls=2)
+			self.recorder = pyo.TableRec(self._raw_source, self.template_table)
 	
 	def start_recording(self):
 		self.recorder.play()
