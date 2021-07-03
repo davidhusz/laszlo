@@ -13,6 +13,7 @@ __all__ = [
 	'Snippet',
 	'DependentLengthSnippet',
 	'FixedLengthSnippet',
+	'ClonedSnippet',
 	'_handler'
 ]
 
@@ -135,7 +136,10 @@ class Program:
 	def add_snippet(self, source, monitoring = True, **kwargs):
 		# only does dependent length snippets and fixed length snippets as of now,
 		# not cloned snippets
-		if 'dur' in kwargs and 'end' in kwargs:
+		from_input = isinstance(source, Input)
+		if not from_input:
+			snippet = ClonedSnippet(source, monitoring, recording = False, **kwargs)
+		elif 'dur' in kwargs and 'end' in kwargs:
 			raise Exception('oh no, cant have `dur` and `end` in args')
 		elif not 'dur' in kwargs and not 'end' in kwargs:
 			raise Exception('oh no, must have `dur` or `end` in args')
@@ -258,6 +262,27 @@ class FixedLengthSnippet(Snippet):
 	def stop_recording(self):
 		off_air()
 		print(f'Snippet length: {self.dur:.3f}s')
+	
+	def start_playback(self):
+		self.osc = pyo.Osc(self.table, freq=self.table.getRate()).out()
+
+
+class ClonedSnippet(Snippet):
+	def __init__(self, source, monitoring, recording, start, repeat):
+		self.source = source
+		self.monitoring = monitoring
+		self.recording = recording
+		self.start = start
+		self.repeat = repeat
+	
+	def _instantiate_pyo_objects(self):
+		if not self.recording:
+			def clone():
+				self.table = self.source.table
+			self.source.end.add_action(clone)
+			self.start.add_action(self.start_playback)
+		else:
+			raise NotImplemented
 	
 	def start_playback(self):
 		self.osc = pyo.Osc(self.table, freq=self.table.getRate()).out()
