@@ -4,10 +4,15 @@ import threading, time
 __all__ = [
 	'EventHandler',
 	'Event',
+	'Time',
 	'ButtonPress',
+	'Boot',
+	'Input',
+	'Duration',
 	'Program',
 	'Snippet',
 	'DependentLengthSnippet',
+	'FixedLengthSnippet',
 	'_handler'
 ]
 
