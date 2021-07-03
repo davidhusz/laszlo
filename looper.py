@@ -183,13 +183,6 @@ class Snippet:
 			self._raw_source.stop()
 		if self.recording:
 			self.stop_recording()
-	
-	@property
-	def dur(self):
-		try:
-			return self.end.time - self.start.time
-		except:
-			return Duration(self)
 
 
 class DependentLengthSnippet(Snippet):
@@ -224,6 +217,13 @@ class DependentLengthSnippet(Snippet):
 	
 	def start_playback(self):
 		self.osc = pyo.Osc(self.table, freq=self.table.getRate()).out()
+
+	@property
+	def dur(self):
+		try:
+			return self.end.time - self.start.time
+		except:
+			return Duration(self)
 
 
 class FixedLengthSnippet:
