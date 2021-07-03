@@ -77,6 +77,12 @@ class Event:
 			# TODO: add parameter for specifying whether actions should be executed asynchronously or not (by default not)
 			action()
 	
+	def __add__(self, other):
+		return Time(self, other)
+	
+	def __radd__(self, other):
+		return self.__add__(other)
+	
 	@property
 	def time(self):
 		if self.__time is not None:
