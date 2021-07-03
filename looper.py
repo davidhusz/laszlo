@@ -82,7 +82,7 @@ class Event:
 		if self.__time is not None:
 			return self.__time
 		else:
-			exit('oh no, event has not happened yet')
+			raise Exception('oh no, event has not happened yet')
 
 
 class ButtonPress(Event):
@@ -113,9 +113,9 @@ class Program:
 		# only does dependent length snippets and fixed length snippets as of now,
 		# not cloned snippets
 		if 'dur' in kwargs and 'end' in kwargs:
-			exit('oh no, cant have `dur` and `end` in args')
+			raise Exception('oh no, cant have `dur` and `end` in args')
 		elif not 'dur' in kwargs and not 'end' in kwargs:
-			exit('oh no, must have `dur` or `end` in args')
+			raise Exception('oh no, must have `dur` or `end` in args')
 		elif 'end' in kwargs:
 			snippet = DependentLengthSnippet(source, monitoring, recording = False, **kwargs)
 		elif 'dur' in kwargs:
