@@ -221,4 +221,9 @@ class DependentLengthSnippet(Snippet):
 		self.osc = pyo.Osc(self.table, freq=self.table.getRate()).out()
 
 
+class FixedLengthSnippet:
+	def __new__(self, source, monitoring, recording, start, dur):
+		return DependentLengthSnippet(source, monitoring, recording, start, start+dur)
+
+
 _handler = EventHandler()
