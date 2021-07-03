@@ -226,9 +226,41 @@ class DependentLengthSnippet(Snippet):
 			return Duration(self)
 
 
-class FixedLengthSnippet:
-	def __new__(self, source, monitoring, recording, start, dur):
-		return DependentLengthSnippet(source, monitoring, recording, start, start+dur)
+class FixedLengthSnippet(Snippet):
+	def __init__(self, source, monitoring, recording, start, dur):
+		# TODO: add self.end once you've implemented Instant events
+		self.source = source
+		self.monitoring = monitoring
+		self.recording = recording
+		self.start = start
+		self.dur = dur
+		self.end = start + dur
+	
+	def _instantiate_pyo_objects(self):
+		self._raw_source = self.source.raw
+		if self.recording:
+			if not isinstance(self.dur, Duration):
+				self.table = pyo.NewTable(self.dur, chnls=2)
+				self.recorder = pyo.TableRec(self._raw_source, self.table)
+			else:
+				def create_table():
+					self.dur = self.dur.compute()
+					self.table = pyo.NewTable(self.dur, chnls=2)
+					self.recorder = pyo.TableRec(self._raw_source, self.table)
+				self.start.add_action(create_table)
+			self.start.add_action(self.on)
+			self.end.add_action(self.off)
+	
+	def start_recording(self):
+		self.recorder.play()
+		on_air()
+	
+	def stop_recording(self):
+		off_air()
+		print(f'Snippet length: {self.dur:.3f}s')
+	
+	def start_playback(self):
+		self.osc = pyo.Osc(self.table, freq=self.table.getRate()).out()
 
 
 _handler = EventHandler()
