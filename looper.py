@@ -1,5 +1,5 @@
 import pyo
-import time
+import threading, time
 
 __all__ = [
 	'EventHandler',
@@ -85,6 +85,18 @@ class Event:
 			raise Exception('oh no, event has not happened yet')
 
 
+class Time(Event):
+	def __init__(self, trigger, delay):
+		super().__init__()
+		if isinstance(delay, Duration):
+			def action():
+				threading.Timer(delay.compute(), self.emit).start()
+		else:
+			def action():
+				threading.Timer(delay, self.emit).start()
+		trigger.add_action(action)
+
+
 class ButtonPress(Event):
 	pass
 
@@ -140,6 +152,14 @@ class Program:
 				break
 
 
+class Duration:
+	def __init__(self, snippet):
+		self.snippet = snippet
+	
+	def compute(self):
+		return self.snippet.dur
+
+
 class Snippet:
 	def on(self):
 		if self.monitoring:
@@ -155,7 +175,10 @@ class Snippet:
 	
 	@property
 	def dur(self):
-		return self.end.time - self.start.time
+		try:
+			return self.end.time - self.start.time
+		except:
+			return Duration(self)
 
 
 class DependentLengthSnippet(Snippet):
