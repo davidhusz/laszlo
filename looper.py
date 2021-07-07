@@ -50,7 +50,8 @@ class EventHandler:
 			press.emit()
 		elif event_type == Boot:
 			# TODO: raise error if already booted
-			self.boot.emit()
+			if hasattr(self, 'boot'):
+				self.boot.emit()
 	
 	def is_expecting_event(self, event_type):
 		if event_type == ButtonPress:
