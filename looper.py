@@ -258,10 +258,14 @@ class LiveSnippet(BaseSnippet):
 class ClonedSnippet(BaseSnippet):
 	def __init__(self, source, *args, **kwargs):
 		super().__init__(source, *args, **kwargs)
+		self.dur = self.dur or source.dur
 		source.recording = True
 	
 	def start_playback(self):
-		self.player = pyo.Osc(self.table, freq=self.table.getRate()).play()
+		self.player = pyo.TableRead(self.table, freq=self.table.getRate()).play()
+	
+	def start_playback_loop(self):
+		self.player = pyo.TableRead(self.table, freq=self.table.getRate(), loop=1).play()
 	
 	def stop_playback(self):
 		self.player.stop()
@@ -334,16 +338,20 @@ class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
 
 
 class ClonedDependentLengthSnippet(ClonedSnippet, DependentLengthSnippet):
-	# TODO: account for repeat/dur parameters
+	# TODO: account for end/dur parameters
 	# TODO: enable recordings
 	def _define_events(self):
 		if not self.recording:
 			def clone_table():
 				self.table = self.source.table
 			self.source.end.add_action(clone_table)
-			self.start.add_action(self.start_playback)
-			if self.monitoring:
-				self.start.add_action(self.start_monitoring)
+			if self.repeat == 1:
+				self.start.add_action(self.start_playback, self.start_monitoring)
+			elif self.repeat != 0:
+				self.start.add_action(self.start_playback_loop, self.start_monitoring)
+				if self.repeat != -1:
+					self.end = self.start + (self.repeat * self.dur)
+					self.end.add_action(self.stop_playback)
 		else:
 			raise NotImplementedError
 
