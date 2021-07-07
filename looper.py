@@ -177,10 +177,10 @@ class BaseSnippet:
 		self.repeat = repeat
 		self.monitoring = monitoring
 		self.recording = False
-		
+	
 	def signal_recording_start(self):
 		on_air()
-
+	
 	def signal_recording_stop(self):
 		off_air()
 		print(f'Snippet length: {self.dur:.3f}s')
@@ -239,7 +239,7 @@ class UndeterminedLengthSnippet(BaseSnippet):
 		self.table = pyo.DataTable(dur_in_samples, chnls=2)
 		self.table.copyData(self.template_table)
 		del self.template_table
-
+	
 	@property
 	def dur(self):
 		try:
