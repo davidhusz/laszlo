@@ -125,9 +125,9 @@ class Program:
 	def __init__(self):
 		self.snippets = []
 		
-	def add_snippet(self, source, start, *, end = None, dur = None, repeat = 1, monitoring = True, recording = False):
+	def add_snippet(self, source, start, *, end = None, dur = None, repeat = 1, monitoring = True):
 		# this function is totally incomplete at the moment
-		args = (source, start, end, dur, repeat, monitoring, recording)
+		args = (source, start, end, dur, repeat, monitoring)
 		assert dur != 0, 'Duration must be greater than zero'
 		if isinstance(source, Input):
 			if end and dur:
@@ -169,14 +169,14 @@ class UndeterminedDuration:
 
 
 class BaseSnippet:
-	def __init__(self, source, start, end, dur, repeat, monitoring, recording):
+	def __init__(self, source, start, end, dur, repeat, monitoring):
 		self.source = source
 		self.start = start
 		self._end = end
 		self._dur = dur
 		self.repeat = repeat
 		self.monitoring = monitoring
-		self.recording = recording
+		self.recording = False
 		
 	def signal_recording_start(self):
 		on_air()
@@ -202,6 +202,10 @@ class LiveSnippet(BaseSnippet):
 
 
 class ClonedSnippet(BaseSnippet):
+	def __init__(self, source, *args, **kwargs):
+		super().__init__(source, *args, **kwargs)
+		source.recording = True
+	
 	def start_playback(self):
 		self.player = pyo.Osc(self.table, freq=self.table.getRate()).play()
 	
