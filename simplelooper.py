@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-from looper import Program, Input, Boot, ButtonPress
+from looper import *
 
 song = Program()
 pre = song.add_snippet(Input(), start=Boot(), end=ButtonPress())
-topLayer = song.add_snippet(Input(), start=pre.end, end=ButtonPress())
-topLayer.recording = True
-topLayer.end.add_action(topLayer.start_playback)
-#topLayerLoop = song.add_copy(topLayer, start=topLayer.end, times=-1)
-#bottomLayer = song.add_snippet(start=topLayer.end+topLayer.dur, dur=topLayer.dur)
-#bottomLayerLoop = song.add_copy(bottomLayer, start=bottomLayer.end+bottomLayer.dur, times=1)
+snippet1 = song.add_snippet(Input(), start=pre.end, end=ButtonPress(), recording=True)
+snippet1_loop = song.add_snippet(snippet1, start=snippet1.end)
+snippet2 = song.add_snippet(Input(), snippet1.end+snippet1.dur, dur=snippet1.dur, recording=True)
+snippet2_loop = song.add_snippet(snippet2, start=snippet2.end)
 song.start()
