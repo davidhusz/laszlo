@@ -94,7 +94,7 @@ class Event:
 class Time(Event):
 	def __init__(self, trigger, delay):
 		super().__init__()
-		if isinstance(delay, Duration):
+		if isinstance(delay, UndeterminedDuration):
 			def action():
 				threading.Timer(delay.compute(), self.emit).start()
 		else:
@@ -160,7 +160,7 @@ class Program:
 				break
 
 
-class Duration:
+class UndeterminedDuration:
 	def __init__(self, snippet):
 		self.snippet = snippet
 	
@@ -232,7 +232,7 @@ class UndeterminedLengthSnippet(BaseSnippet):
 		try:
 			return self.end.time - self.start.time
 		except:
-			return Duration(self)
+			return UndeterminedDuration(self)
 
 
 class DependentLengthSnippet(BaseSnippet):
@@ -259,7 +259,7 @@ class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
 	def _instantiate_pyo_objects(self):
 		super()._instantiate_raw_source()
 		if self.recording:
-			if not isinstance(self.dur, Duration):
+			if not isinstance(self.dur, UndeterminedDuration):
 				self.table = pyo.NewTable(self.dur, chnls=2)
 				self.recorder = pyo.TableRec(self._raw_source, self.table)
 			else:
