@@ -199,11 +199,18 @@ class Program:
 
 
 class UndeterminedDuration:
-	def __init__(self, snippet):
+	def __init__(self, snippet, factor = 1):
 		self.snippet = snippet
+		self.factor = factor
 	
 	def compute(self):
-		return self.snippet.dur
+		return self.snippet.dur * self.factor
+	
+	def __mul__(self, other):
+		return UndeterminedDuration(self.snippet, other)
+	
+	def __rmul__(self, other):
+		return self.__mul__(other)
 
 
 class BaseSnippet:
