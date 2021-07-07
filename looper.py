@@ -185,6 +185,15 @@ class BaseSnippet:
 		off_air()
 		print(f'Snippet length: {self.dur:.3f}s')
 	
+	def signal_monitoring_start(self):
+		# This should light up the LED ina different color than for recording,
+		# but right now you only have it one color
+		pass
+	
+	def signal_monitoring_stop(self):
+		# same as above
+		pass
+	
 	def start_recording(self):
 		self.recorder.play()
 
@@ -255,8 +264,8 @@ class LiveUndeterminedLengthSnippet(LiveSnippet, UndeterminedLengthSnippet):
 			self.start.add_action(self.start_recording, self.signal_recording_start)
 			self.end.add_action(self.stop_recording, self.signal_recording_stop)
 		if self.monitoring:
-			self.start.add_action(self.start_monitoring)
-			self.end.add_action(self.stop_monitoring)	
+			self.start.add_action(self.start_monitoring, self.signal_monitoring_start)
+			self.end.add_action(self.stop_monitoring, self.signal_monitoring_stop)
 
 
 class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
@@ -274,12 +283,9 @@ class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
 				self.start.add_action(create_table)
 			self.start.add_action(self.start_recording, self.signal_recording_start)
 			self.end.add_action(self.signal_recording_stop)
-			if self.monitoring:
-				self.start.add_action(self.start_monitoring)
-				self.end.add_action(self.stop_monitoring)
-		elif self.monitoring:
-			self.start.add_action(self.start_monitoring)
-			self.end.add_action(self.stop_monitoring)
+		if self.monitoring:
+			self.start.add_action(self.start_monitoring, self.signal_monitoring_start)
+			self.end.add_action(self.stop_monitoring, self.signal_monitoring_stop)
 
 
 class ClonedDependentLengthSnippet(ClonedSnippet, DependentLengthSnippet):
