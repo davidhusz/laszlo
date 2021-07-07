@@ -2,19 +2,12 @@ import pyo
 import threading, time
 
 __all__ = [
-	'EventHandler',
 	'Event',
 	'Time',
 	'ButtonPress',
 	'Boot',
 	'Input',
-	'Duration',
-	'Program',
-	'Snippet',
-	'DependentLengthSnippet',
-	'FixedLengthSnippet',
-	'ClonedSnippet',
-	'_handler'
+	'Program'
 ]
 
 # TODO:
@@ -132,21 +125,22 @@ class Input(Source):
 class Program:
 	def __init__(self):
 		self.snippets = []
-	
-	def add_snippet(self, source, monitoring = True, **kwargs):
-		# only does dependent length snippets and fixed length snippets as of now,
-		# not cloned snippets
-		from_input = isinstance(source, Input)
-		if not from_input:
-			snippet = ClonedSnippet(source, monitoring, recording = False, **kwargs)
-		elif 'dur' in kwargs and 'end' in kwargs:
-			raise Exception('oh no, cant have `dur` and `end` in args')
-		elif not 'dur' in kwargs and not 'end' in kwargs:
-			raise Exception('oh no, must have `dur` or `end` in args')
-		elif 'end' in kwargs:
-			snippet = DependentLengthSnippet(source, monitoring, recording = False, **kwargs)
-		elif 'dur' in kwargs:
-			snippet = FixedLengthSnippet(source, monitoring, recording = False, **kwargs)
+		
+	def add_snippet(self, source, start, *, end = None, dur = None, repeat = 1, monitoring = True, recording = False):
+		# this function is totally incomplete at the moment
+		args = (source, start, end, dur, repeat, monitoring, recording)
+		assert dur != 0, 'Duration must be greater than zero'
+		if isinstance(source, Input):
+			if end and dur:
+				raise Exception('oh no, cant have `dur` and `end` in args')
+			elif not dur and not end:
+				raise Exception('oh no, must have `dur` or `end` in args')
+			elif end:
+				snippet = LiveUndeterminedLengthSnippet(*args)
+			elif dur:
+				snippet = LiveDependentLengthSnippet(*args)
+		elif isinstance(source, BaseSnippet):
+			snippet = ClonedDependentLengthSnippet(*args)
 		self.snippets.append(snippet)
 		return snippet
 	
@@ -175,52 +169,64 @@ class Duration:
 		return self.snippet.dur
 
 
-class Snippet:
-	def on(self):
-		if self.monitoring:
-			self._raw_source.out()
-		if self.recording:
-			self.start_recording()
-	
-	def off(self):
-		if self.monitoring:
-			self._raw_source.stop()
-		if self.recording:
-			self.stop_recording()
-
-
-class DependentLengthSnippet(Snippet):
-	def __init__(self, source, monitoring, recording, start, end):
+class BaseSnippet:
+	def __init__(self, source, start, end, dur, repeat, monitoring, recording):
 		self.source = source
+		self.start = start
+		self._end = end
+		self._dur = dur
+		self.repeat = repeat
 		self.monitoring = monitoring
 		self.recording = recording
-		self.start = start
-		self.end = end
-#		self.start.add_action(self.start_recording)
-#		self.end.add_action(self.stop_recording, self.start_playback)
-		self.start.add_action(self.on)
-		self.end.add_action(self.off)
-	
-	def _instantiate_pyo_objects(self):
-		self._raw_source = self.source.raw
-		if self.recording:
-			self.template_table = pyo.NewTable(_snippet_init_length, chnls=2)
-			self.recorder = pyo.TableRec(self._raw_source, self.template_table)
+		
+	def signal_recording_start(self):
+		on_air()
+
+	def signal_recording_stop(self):
+		off_air()
+		print(f'Snippet length: {self.dur:.3f}s')
 	
 	def start_recording(self):
 		self.recorder.play()
-		on_air()
+
+
+class LiveSnippet(BaseSnippet):
+	def _instantiate_raw_source(self):
+		self._raw_source = self.source.raw
+	
+	def start_monitoring(self):
+		self._raw_source.out()
+	
+	def stop_monitoring(self):
+		# TODO: find a way to stop just the outputting, not the processing
+		self._raw_source.stop()
+
+
+class ClonedSnippet(BaseSnippet):
+	def start_playback(self):
+		self.player = pyo.Osc(self.table, freq=self.table.getRate()).play()
+	
+	def stop_playback(self):
+		self.player.stop()
+	
+	def start_monitoring(self):
+		self.player.out()
+	
+	def stop_monitoring(self):
+		# TODO: find a way to stop just the outputting, not the processing
+		self.player.stop()
+
+
+class UndeterminedLengthSnippet(BaseSnippet):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.end = self._end
 	
 	def stop_recording(self):
 		dur_in_samples = int(self.dur * self.template_table.getSamplingRate())
 		self.table = pyo.DataTable(dur_in_samples, chnls=2)
 		self.table.copyData(self.template_table)
 		del self.template_table
-		off_air()
-		print(f'Snippet length: {self.dur:.3f}s')
-	
-	def start_playback(self):
-		self.osc = pyo.Osc(self.table, freq=self.table.getRate()).out()
 
 	@property
 	def dur(self):
@@ -230,18 +236,29 @@ class DependentLengthSnippet(Snippet):
 			return Duration(self)
 
 
-class FixedLengthSnippet(Snippet):
-	def __init__(self, source, monitoring, recording, start, dur):
-		# TODO: add self.end once you've implemented Instant events
-		self.source = source
-		self.monitoring = monitoring
-		self.recording = recording
-		self.start = start
-		self.dur = dur
-		self.end = start + dur
-	
+class DependentLengthSnippet(BaseSnippet):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.end = self.start + self._dur
+		self.dur = self._dur
+
+
+class LiveUndeterminedLengthSnippet(LiveSnippet, UndeterminedLengthSnippet):
 	def _instantiate_pyo_objects(self):
-		self._raw_source = self.source.raw
+		super()._instantiate_raw_source()
+		if self.recording:
+			self.template_table = pyo.NewTable(_snippet_init_length, chnls=2)
+			self.recorder = pyo.TableRec(self._raw_source, self.template_table)
+			self.start.add_action(self.start_recording, self.signal_recording_start)
+			self.end.add_action(self.stop_recording, self.signal_recording_stop)
+		if self.monitoring:
+			self.start.add_action(self.start_monitoring)
+			self.end.add_action(self.stop_monitoring)	
+
+
+class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
+	def _instantiate_pyo_objects(self):
+		super()._instantiate_raw_source()
 		if self.recording:
 			if not isinstance(self.dur, Duration):
 				self.table = pyo.NewTable(self.dur, chnls=2)
@@ -252,40 +269,29 @@ class FixedLengthSnippet(Snippet):
 					self.table = pyo.NewTable(self.dur, chnls=2)
 					self.recorder = pyo.TableRec(self._raw_source, self.table)
 				self.start.add_action(create_table)
-			self.start.add_action(self.on)
-			self.end.add_action(self.off)
-	
-	def start_recording(self):
-		self.recorder.play()
-		on_air()
-	
-	def stop_recording(self):
-		off_air()
-		print(f'Snippet length: {self.dur:.3f}s')
-	
-	def start_playback(self):
-		self.osc = pyo.Osc(self.table, freq=self.table.getRate()).out()
+			self.start.add_action(self.start_recording, self.signal_recording_start)
+			self.end.add_action(self.signal_recording_stop)
+			if self.monitoring:
+				self.start.add_action(self.start_monitoring)
+				self.end.add_action(self.stop_monitoring)
+		elif self.monitoring:
+			self.start.add_action(self.start_monitoring)
+			self.end.add_action(self.stop_monitoring)
 
 
-class ClonedSnippet(Snippet):
-	def __init__(self, source, monitoring, recording, start, repeat):
-		self.source = source
-		self.monitoring = monitoring
-		self.recording = recording
-		self.start = start
-		self.repeat = repeat
-	
+class ClonedDependentLengthSnippet(ClonedSnippet, DependentLengthSnippet):
+	# TODO: account for repeat/dur parameters
+	# TODO: enable recordings
 	def _instantiate_pyo_objects(self):
 		if not self.recording:
-			def clone():
+			def clone_table():
 				self.table = self.source.table
-			self.source.end.add_action(clone)
+			self.source.end.add_action(clone_table)
 			self.start.add_action(self.start_playback)
+			if self.monitoring:
+				self.start.add_action(self.start_monitoring)
 		else:
-			raise NotImplemented
-	
-	def start_playback(self):
-		self.osc = pyo.Osc(self.table, freq=self.table.getRate()).out()
+			raise NotImplementedError
 
 
 _handler = EventHandler()
