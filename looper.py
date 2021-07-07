@@ -125,21 +125,59 @@ class Program:
 	def __init__(self):
 		self.snippets = []
 		
-	def add_snippet(self, source, start, *, end = None, dur = None, repeat = 1, monitoring = True):
-		# this function is totally incomplete at the moment
+	def add_snippet(self, source, start, *, end = None, dur = None, repeat = None, monitoring = True):
+		# TODO: refactoring
+		if repeat is None:
+			repeat_was_default = True
+			repeat = 1
+		else:
+			repeat_was_default = False
 		args = (source, start, end, dur, repeat, monitoring)
-		assert dur != 0, 'Duration must be greater than zero'
 		if isinstance(source, Input):
-			if end and dur:
-				raise Exception('oh no, cant have `dur` and `end` in args')
-			elif not dur and not end:
-				raise Exception('oh no, must have `dur` or `end` in args')
-			elif end:
+			if not repeat_was_default:
+				raise Exception('oh no, `repeat` is not an option for live input snippets')
+			elif end is not None and dur is not None:
+				raise Exception('oh no, cant have `end` and `dur` in args')
+			elif end is None and dur is None:
+				raise Exception('oh no, must have `end` or `dur` in args')
+			elif end is not None:
 				snippet = LiveUndeterminedLengthSnippet(*args)
-			elif dur:
+			elif isinstance(dur, UndeterminedDuration):
 				snippet = LiveDependentLengthSnippet(*args)
-		elif isinstance(source, BaseSnippet):
-			snippet = ClonedDependentLengthSnippet(*args)
+			elif isinstance(dur, (float, int)):
+				# snippet = LiveFixedLengthSnippet(*args)
+				pass
+			else:
+				raise Exception('oh no, this shouldnt be able to happen')
+		elif isinstance(source, (BaseSnippet, str)):
+			if end is not None and dur is not None:
+				raise Exception('oh no, cant have `end` and `dur` in args')
+			elif (end is not None or dur is not None) and repeat not in (-1, 0, 1):
+				raise Exception('oh no, cant have `end` or `dur` and a specific `repeat`')
+			elif end is not None:
+				if isinstance(source, BaseSnippet):
+					# snippet = ClonedUndeterminedLengthSnippet(*args)
+					pass
+				else:
+					# snippet = PrerecordedUndeterminedLengthSnippet(*args)
+					pass
+			elif dur is None or isinstance(dur, UndeterminedDuration):
+				if isinstance(source, BaseSnippet):
+					snippet = ClonedDependentLengthSnippet(*args)
+				else:
+					# snippet = PrerecordedDependentLengthSnippet(*args)
+					pass
+			elif isinstance(dur, (float, int)):
+				if isinstance(source, BaseSnippet):
+					# snippet = ClonedFixedLengthSnippet(*args)
+					pass
+				else:
+					# snippet = PrerecordedFixedLengthSnippet(*args)
+					pass
+			else:
+				raise Exception('oh no, this shouldnt be able to happen')
+		else:
+			raise Exception('oh no, this shouldnt be able to happen')
 		self.snippets.append(snippet)
 		return snippet
 	
