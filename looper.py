@@ -147,7 +147,7 @@ class Program:
 		server = pyo.Server().boot()
 		server.start()
 		for snippet in self.snippets:
-			snippet._instantiate_pyo_objects()
+			snippet._define_events()
 		_handler.emit_event(Boot)
 		while True:
 			wait()
@@ -256,7 +256,7 @@ class DependentLengthSnippet(BaseSnippet):
 
 
 class LiveUndeterminedLengthSnippet(LiveSnippet, UndeterminedLengthSnippet):
-	def _instantiate_pyo_objects(self):
+	def _define_events(self):
 		super()._instantiate_raw_source()
 		if self.recording:
 			self.template_table = pyo.NewTable(_snippet_init_length, chnls=2)
@@ -269,7 +269,7 @@ class LiveUndeterminedLengthSnippet(LiveSnippet, UndeterminedLengthSnippet):
 
 
 class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
-	def _instantiate_pyo_objects(self):
+	def _define_events(self):
 		super()._instantiate_raw_source()
 		if self.recording:
 			if not isinstance(self.dur, UndeterminedDuration):
@@ -291,7 +291,7 @@ class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
 class ClonedDependentLengthSnippet(ClonedSnippet, DependentLengthSnippet):
 	# TODO: account for repeat/dur parameters
 	# TODO: enable recordings
-	def _instantiate_pyo_objects(self):
+	def _define_events(self):
 		if not self.recording:
 			def clone_table():
 				self.table = self.source.table
