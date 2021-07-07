@@ -108,18 +108,16 @@ class ButtonPress(Event):
 
 
 class Boot(Event):
+	# TODO: raise Error if instantiated multiple times
 	pass
 
 
 class Source:
-	@property
-	def raw(self):
-		pass
+	pass
 
 
 class Input(Source):
-	@property
-	def raw(self):
+	def get_raw(self):
 		return pyo.Input(chnl=1).mix(2)
 
 
@@ -193,7 +191,7 @@ class BaseSnippet:
 
 class LiveSnippet(BaseSnippet):
 	def _instantiate_raw_source(self):
-		self._raw_source = self.source.raw
+		self._raw_source = self.source.get_raw()
 	
 	def start_monitoring(self):
 		self._raw_source.out()
