@@ -70,14 +70,16 @@ class Event:
 
 class Time(Event):
 	def __init__(self, trigger, delay):
+		self.trigger = trigger
+		self.delay = delay
 		super().__init__()
 		if isinstance(delay, UndeterminedDuration):
 			def action():
-				threading.Timer(delay.compute(), self.emit).start()
+				threading.Timer(self.delay.compute(), self.emit).start()
 		else:
 			def action():
-				threading.Timer(delay, self.emit).start()
-		trigger.add_action(action)
+				threading.Timer(self.delay, self.emit).start()
+		self.trigger.add_action(action)
 
 
 class ButtonPress(Event):
