@@ -78,11 +78,17 @@ class Program:
 		self.snippets.append(snippet)
 		return snippet
 	
-	def start(self):
-		server = pyo.Server().boot()
-		server.start()
+	def _boot_server(self):
+		self.server = pyo.Server().boot()
+		self.server.start()
+	
+	def _define_events(self):
 		for snippet in self.snippets:
 			snippet._define_events()
+
+	def start(self):
+		self._boot_server()
+		self._define_events()
 		events._handler.emit_event(events.Boot)
 		while True:
 			wait()
@@ -91,5 +97,5 @@ class Program:
 				print('Program finished. Press Enter now at any time to exit.')
 				wait()
 				print('Goodbye!')
-				server.stop()
+				self.server.stop()
 				break
