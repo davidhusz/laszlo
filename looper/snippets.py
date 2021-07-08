@@ -161,6 +161,17 @@ class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
 class ClonedDependentLengthSnippet(ClonedSnippet, DependentLengthSnippet):
 	# TODO: account for end/dur parameters
 	# TODO: enable recordings
+	def __init__(self, source, start, end, dur, repeat, monitoring):
+		# We're calling the parent class methods explicitly here for two reasons:
+		# 1. To ensure that they're called in the specified order, since Python
+		#    calls parent __init__ methods in *opposite* method resolution order
+		#    by default
+		# 2. To pass self.dur rather than dur to DependentLengthSnippet, since
+		#    ClonedSnippet potentially assigns a value different than dur to
+		#    self.dur
+		ClonedSnippet.__init__(self, source, start, end, dur, repeat, monitoring)
+		DependentLengthSnippet.__init__(self, source, start, end, self.dur, repeat, monitoring)
+	
 	def _define_events(self):
 		if not self.recording:
 			def clone_table():
