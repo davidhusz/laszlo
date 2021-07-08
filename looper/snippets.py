@@ -77,8 +77,8 @@ class LiveSnippet(BaseSnippet):
 
 
 class ClonedSnippet(BaseSnippet):
-	def __init__(self, source, *args, **kwargs):
-		super().__init__(source, *args, **kwargs)
+	def __init__(self, source, *args):
+		super().__init__(source, *args)
 		self.dur = self.dur or source.dur
 		source.recording = True
 	
@@ -100,8 +100,8 @@ class ClonedSnippet(BaseSnippet):
 
 
 class UndeterminedLengthSnippet(BaseSnippet):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+	def __init__(self, *args):
+		super().__init__(*args)
 		self.end = self._end
 	
 	def stop_recording(self):
@@ -119,8 +119,8 @@ class UndeterminedLengthSnippet(BaseSnippet):
 
 
 class DependentLengthSnippet(BaseSnippet):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+	def __init__(self, *args):
+		super().__init__(*args)
 		self.end = self.start + self._dur
 		self.dur = self._dur
 
