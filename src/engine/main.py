@@ -1,5 +1,5 @@
 from .snippets import *
-from . import events
+from . import events, effects
 import pyo
 
 
@@ -55,14 +55,14 @@ class Track:
 		self.name = name
 		self.snippets = []
 	
-	def add_snippet(self, source, start, *, end = None, dur = None, repeat = None, monitoring = True):
+	def add_snippet(self, source, start, *, end = None, dur = None, repeat = None, fx = None, monitoring = True):
 		# TODO: refactoring
 		if repeat is None:
 			repeat_was_default = True
 			repeat = 1
 		else:
 			repeat_was_default = False
-		args = (source, start, end, dur, repeat, monitoring)
+		args = (source, start, end, dur, repeat, fx, monitoring)
 		if isinstance(source, Input):
 			if not repeat_was_default:
 				raise Exception('oh no, `repeat` is not an option for live input snippets')

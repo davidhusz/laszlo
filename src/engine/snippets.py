@@ -35,12 +35,13 @@ class UndeterminedDuration:
 
 
 class BaseSnippet:
-	def __init__(self, source, start, end, dur, repeat, monitoring):
+	def __init__(self, source, start, end, dur, repeat, fx, monitoring):
 		self.source = source
 		self.start = start
 		self._end = end
 		self._dur = dur
 		self.repeat = repeat
+		self.fx = fx or []
 		self.monitoring = monitoring
 		self.recording = False
 	
@@ -67,6 +68,11 @@ class BaseSnippet:
 class LiveSnippet(BaseSnippet):
 	def _instantiate_raw_source(self):
 		self._raw_source = self.source.get_raw()
+		self.apply_fx()
+		
+	def apply_fx(self):
+		for effect in self.fx:
+			self._raw_source = effect(self._raw_source)
 	
 	def start_monitoring(self):
 		self._raw_source.out()
@@ -82,11 +88,17 @@ class ClonedSnippet(BaseSnippet):
 		self.dur = self.dur or source.dur
 		source.recording = True
 	
+	def apply_fx(self):
+		for effect in self.fx:
+			self.player = effect(self.player)
+	
 	def start_playback(self):
 		self.player = pyo.TableRead(self.table, freq=self.table.getRate()).play()
+		self.apply_fx()
 	
 	def start_playback_loop(self):
 		self.player = pyo.TableRead(self.table, freq=self.table.getRate(), loop=1).play()
+		self.apply_fx()
 	
 	def stop_playback(self):
 		self.player.stop()
@@ -159,9 +171,7 @@ class LiveDependentLengthSnippet(LiveSnippet, DependentLengthSnippet):
 
 
 class ClonedDependentLengthSnippet(ClonedSnippet, DependentLengthSnippet):
-	# TODO: account for end/dur parameters
-	# TODO: enable recordings
-	def __init__(self, source, start, end, dur, repeat, monitoring):
+	def __init__(self, source, start, end, dur, repeat, fx, monitoring):
 		# We're calling the parent class methods explicitly here for two reasons:
 		# 1. To ensure that they're called in the specified order, since Python
 		#    calls parent __init__ methods in *opposite* method resolution order
@@ -169,8 +179,8 @@ class ClonedDependentLengthSnippet(ClonedSnippet, DependentLengthSnippet):
 		# 2. To pass self.dur rather than dur to DependentLengthSnippet, since
 		#    ClonedSnippet potentially assigns a value different than dur to
 		#    self.dur
-		ClonedSnippet.__init__(self, source, start, end, dur, repeat, monitoring)
-		DependentLengthSnippet.__init__(self, source, start, end, self.dur, repeat, monitoring)
+		ClonedSnippet.__init__(self, source, start, end, dur, repeat, fx, monitoring)
+		DependentLengthSnippet.__init__(self, source, start, end, self.dur, repeat, fx, monitoring)
 	
 	def _define_events(self):
 		if not self.recording:
