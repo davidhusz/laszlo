@@ -1,15 +1,32 @@
-html, body {
-	margin: 0;
-	padding: 0;
-}
-svg {
+#main {
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
+	background-color: #242424;
+	display: grid;
+	grid-template-columns: 20% auto;
+	grid-template-rows: 5% auto;
+	grid-template-areas:
+		"main-menu main-menu"
+		"mixer     workspace"
+}
+#main-menu {
+	grid-area: main-menu;
+}
+#mixer {
+	grid-area: mixer;
+}
+#workspace {
+	grid-area: workspace;
 	/* background-color: #4f565e; */
 	background-color: #33383e;
+	overflow: scroll;
+}
+svg {
+	width: max(100%, 3000px);
+	height: max(95%, 2000px);  /* 95% because otherwise we always get a scrollbar for some reason */
 }
 .snippet rect {
 	stroke: #d2a900ff;
