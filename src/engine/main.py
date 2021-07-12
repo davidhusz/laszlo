@@ -20,8 +20,41 @@ class Input(Source):
 
 class Program:
 	def __init__(self):
+		self.tracks = []
+	
+	def add_track(self, name = None):
+		track = Track(name or 'Untitled track')
+		self.tracks.append(track)
+		return track
+	
+	def _boot_server(self):
+		self.server = pyo.Server().boot()
+		self.server.start()
+	
+	def _define_events(self):
+		for track in self.tracks:
+			track._define_events()
+	
+	def start(self):
+		self._boot_server()
+		self._define_events()
+		events._handler.emit_event(events.Boot)
+		while True:
+			wait()
+			events._handler.emit_event(events.ButtonPress)
+			if not events._handler.is_expecting_event(events.ButtonPress):
+				print('Program finished. Press Enter now at any time to exit.')
+				wait()
+				print('Goodbye!')
+				self.server.stop()
+				break
+
+
+class Track:
+	def __init__(self, name):
+		self.name = name
 		self.snippets = []
-		
+	
 	def add_snippet(self, source, start, *, end = None, dur = None, repeat = None, monitoring = True):
 		# TODO: refactoring
 		if repeat is None:
@@ -78,24 +111,6 @@ class Program:
 		self.snippets.append(snippet)
 		return snippet
 	
-	def _boot_server(self):
-		self.server = pyo.Server().boot()
-		self.server.start()
-	
 	def _define_events(self):
 		for snippet in self.snippets:
 			snippet._define_events()
-
-	def start(self):
-		self._boot_server()
-		self._define_events()
-		events._handler.emit_event(events.Boot)
-		while True:
-			wait()
-			events._handler.emit_event(events.ButtonPress)
-			if not events._handler.is_expecting_event(events.ButtonPress):
-				print('Program finished. Press Enter now at any time to exit.')
-				wait()
-				print('Goodbye!')
-				self.server.stop()
-				break
