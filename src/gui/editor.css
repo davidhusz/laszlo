@@ -17,21 +17,25 @@
 }
 #mixer {
 	grid-area: mixer;
+	margin-right: 5px;
 }
 #workspace {
 	grid-area: workspace;
+	overflow: scroll;
+}
+#mixer, #workspace {
 	/* background-color: #4f565e; */
 	background-color: #33383e;
-	overflow: scroll;
 }
 svg {
 	width: max(100%, 3000px);
 	height: max(95%, 2000px);  /* 95% because otherwise we always get a scrollbar for some reason */
 }
 .snippet rect {
-	stroke: #d2a900ff;
-	fill: #ffcc00ff;
+	fill: #e8e8e8;
+	stroke: black;
 	stroke-width: 2px;
+	stroke-opacity: 0.25;
 }
 .snippet text {
 	fill: black;
@@ -42,12 +46,14 @@ svg {
 }
 .recording-indicator {
 	fill: none;
-	stroke: #776004ff;
+	/* stroke: #776004ff; */
+	stroke: black;
 	stroke-width: 1px;
+	stroke-opacity: 0.75;
 }
 .snippet:not(.recording) .recording-indicator {
 	visibility: hidden;
 }
 .snippet.clone {
-	/* opacity: 0.7; */
+	opacity: 0.8;
 }
