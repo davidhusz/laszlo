@@ -23,7 +23,7 @@
 	grid-area: workspace;
 	overflow: scroll;
 }
-#mixer, #workspace {
+#workspace {
 	/* background-color: #4f565e; */
 	background-color: #33383e;
 }
@@ -31,20 +31,16 @@
 	width: 100%;
 	height: 100%;
 }
-#mixer rect {
-	fill: #242424;
+.track-mixer rect {
+	fill: #4f4f4f;
 }
 .track-mixer text {
 	fill: white;
-	opacity: 0.5;
+	opacity: 0.6;
 	font-family: sans-serif;
 	text-anchor: start;
 	dominant-baseline: hanging;
 	cursor: pointer;
-}
-.track-mixer line {
-	stroke: #242424;
-	stroke-width: 3px;
 }
 #workspace svg {
 	width: max(100%, 3000px);

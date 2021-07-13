@@ -122,8 +122,6 @@ class Program {
 	renderMixer() {
 		return `
 			<svg>
-				<!-- this rect is there so that we can still mouse over etc -->
-				<rect x="0" y="0" width="100%" height="5px"/>
 				${this.tracks.map(track => track.renderMixer()).join("")}
 			</svg>
 		`;
@@ -156,6 +154,7 @@ class Track {
 		this.attrs = attrs;
 		this.snippets = snippets;
 		this.height = 110;
+		this.padding = 2;
 	}
 	
 	get container() {
@@ -189,10 +188,11 @@ class Track {
 	renderMixer() {
 		return `
 			<g class="track-mixer" id="${this.attrs.id}">
-				<rect x="0" y="${this.y}" width="100%" height="${this.height}px" opacity="0"/>
-				<rect x="0" y="${this.y}" width="100%" height="45px"/>
-				<text x="10px" y="${this.y + 10}px" font-size="25px">${this.attrs.name}</text>
-				<line x1="0" y1="${this.y2}px" x2="100%" y2="${this.y2}px"/>
+				<rect x="0" y="${this.y + this.padding}px" width="100%"
+					height="${this.height - (2 * this.padding)}px"/>
+				<text x="10px" y="${this.y + this.padding + 10}px">
+					${this.attrs.name}
+				</text>
 			</g>
 		`;
 	}
