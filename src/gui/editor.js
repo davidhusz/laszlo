@@ -275,6 +275,14 @@ class Snippet {
 		}
 	}
 	
+	rename() {
+		let newName = prompt("Please enter a new name for the snippet:", this.attrs.name);
+		if (newName !== null) {
+			this.attrs.name = newName;
+			this.container.querySelector("text").innerHTML = this.attrs.name ?? "";
+		}
+	}
+	
 	addHandlers() {
 		this.container.querySelector("rect").onclick = (event) => {
 			if (!event.shiftKey) {
@@ -294,6 +302,8 @@ class Snippet {
 				}
 			}
 		};
+		
+		this.container.querySelector("text").onclick = this.rename.bind(this);
 	}
 	
 	getCSSClasses() {
