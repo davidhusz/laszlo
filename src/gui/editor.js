@@ -258,7 +258,7 @@ class Snippet {
 		this.container.classList.add("selected");
 		this.container.classList.remove("indirectly-selected");
 		this.relatives.forEach(relative => {
-			if (!relative.container.classList.contains("selected")) {
+			if (!relative.isSelected()) {
 				relative.container.classList.add("indirectly-selected");
 			}
 		});
@@ -267,7 +267,7 @@ class Snippet {
 	unselect() {
 		this.container.classList.remove("selected");
 		if (!this.relatives.some(relative =>
-			relative.container.classList.contains("selected")
+			relative.isSelected()
 		)) {
 			this.relatives.forEach(relative => {
 				relative.container.classList.remove("indirectly-selected");
@@ -277,10 +277,14 @@ class Snippet {
 		}
 	}
 	
+	isSelected() {
+		return this.container.classList.contains("selected");
+	}
+	
 	handleClick(event) {
 		// hold shift while clicking for selecting multiple snippets
 		if (!event.shiftKey) {
-			if (!this.container.classList.contains("selected")) {
+			if (!this.isSelected()) {
 				// if `this` is not yet directly selected, make it the only directly
 				// selected snippet
 				this.containingProgram.clearSelection();
@@ -289,7 +293,7 @@ class Snippet {
 				// if `this` is the only directly selected snippet, clear selection,
 				// otherwise clear selection and then select `this`
 				let currentlySelected = this.containingProgram.snippets.filter(snippet =>
-					snippet.container.classList.contains("selected")
+					snippet.isSelected()
 				);
 				if (currentlySelected.length == 1) {
 					this.containingProgram.clearSelection();
@@ -299,7 +303,7 @@ class Snippet {
 				}
 			}
 		} else {
-			if (!this.container.classList.contains("selected")) {
+			if (!this.isSelected()) {
 				// add `this` to directly selected snippets
 				this.select();
 			} else {
