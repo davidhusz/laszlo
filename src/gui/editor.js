@@ -278,19 +278,32 @@ class Snippet {
 	}
 	
 	handleClick(event) {
+		// hold shift while clicking for selecting multiple snippets
 		if (!event.shiftKey) {
 			if (!this.container.classList.contains("selected")) {
+				// if `this` is not yet directly selected, make it the only directly
+				// selected snippet
 				this.containingProgram.clearSelection();
 				this.select();
 			} else {
-				// ideally this should clear selection if `this` is the only one selected,
+				// if `this` is the only directly selected snippet, clear selection,
 				// otherwise clear selection and then select `this`
-				this.containingProgram.clearSelection();
+				let currentlySelected = this.containingProgram.snippets.filter(snippet =>
+					snippet.container.classList.contains("selected")
+				);
+				if (currentlySelected.length == 1) {
+					this.containingProgram.clearSelection();
+				} else {
+					this.containingProgram.clearSelection();
+					this.select();
+				}
 			}
 		} else {
 			if (!this.container.classList.contains("selected")) {
+				// add `this` to directly selected snippets
 				this.select();
 			} else {
+				// make `this` no longer directly selected
 				this.unselect();
 			}
 		}
