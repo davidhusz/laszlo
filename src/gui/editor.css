@@ -31,6 +31,20 @@
 	width: 100%;
 	height: 100%;
 }
+#mixer rect {
+	fill: #242424;
+}
+.track-mixer text {
+	fill: white;
+	opacity: 0.5;
+	font-family: sans-serif;
+	text-anchor: start;
+	dominant-baseline: hanging;
+}
+.track-mixer line {
+	stroke: #242424;
+	stroke-width: 3px;
+}
 #workspace svg {
 	width: max(100%, 3000px);
 	height: max(95%, 2000px);  /* 95% because otherwise we always get a scrollbar for some reason */

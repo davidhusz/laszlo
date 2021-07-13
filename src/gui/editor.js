@@ -16,6 +16,10 @@ class Program {
 	constructor(attrs, tracks, options = {}) {
 		this.attrs = attrs;
 		this.tracks = tracks;
+		this.tracks.forEach(track => {
+			track.getIndex = () =>
+				this.tracks.indexOf(track);
+		});
 		if ("mixerContainer" in options) {
 			this.mixerContainer = options.mixerContainer;
 			this.updateMixer();
@@ -112,6 +116,8 @@ class Program {
 	renderMixer() {
 		return `
 			<svg>
+				<!-- this rect is there so that we can still mouse over etc -->
+				<rect x="0" y="0" width="100%" height="5px"/>
 				${this.tracks.map(track => track.renderMixer()).join("")}
 			</svg>
 		`;
@@ -142,22 +148,35 @@ class Track {
 	constructor(attrs, snippets) {
 		this.attrs = attrs;
 		this.snippets = snippets;
+		this.height = 110;
 	}
 	
 	get container() {
 		return document.getElementById(this.attrs.id);
 	}
 	
+	get y() {
+		return 5 + this.getIndex() * this.height;
+	}
+	
+	get y2() {
+		return this.y + this.height;
+	}
+	
 	renderMixer() {
 		return `
 			<g class="track-mixer">
+				<rect x="0" y="${this.y}" width="100%" height="${this.height}px" opacity="0"/>
+				<rect x="0" y="${this.y}" width="100%" height="45px"/>
+				<text x="10px" y="${this.y + 10}px" font-size="25px">${this.attrs.name}</text>
+				<line x1="0" y1="${this.y2}px" x2="100%" y2="${this.y2}px"/>
 			</g>
 		`;
 	}
 	
 	renderWorkspace() {
 		return `
-			<g class="track" id="${this.attrs.id}">
+			<g class="track-workspace" id="${this.attrs.id}">
 				${this.snippets.join("")}
 			</g>
 		`;
