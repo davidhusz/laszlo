@@ -226,7 +226,7 @@ class Snippet {
 			<g class="${this.getCSSClasses()}" id="${this.attrs.id}">
 				<rect x="${this.x}px" y="${this.y}px"
 					width="${this.width}px" height="${this.height}px"/>
-				<text x="${this.horizontalCenter}px" y="${this.verticalCenter}px">
+				<text x="${this.x + 10}px" y="${this.y2 - 10}px">
 					${this.attrs.name ?? ""}
 				</text>
 				<circle class="recording-indicator"

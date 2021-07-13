@@ -58,8 +58,8 @@
 .snippet text {
 	fill: black;
 	font-family: sans-serif;
-	text-anchor: middle;
-	dominant-baseline: middle;
+	/* text-anchor: middle;
+	dominant-baseline: middle; */
 	opacity: 0.5;
 }
 .recording-indicator {
