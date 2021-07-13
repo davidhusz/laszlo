@@ -1,0 +1,83 @@
+$dark-background: #242424
+// $light-background: #4f565e
+$light-background: #33383e
+
+body
+	font-family: sans-serif
+
+#main
+	position: fixed
+	top: 0
+	left: 0
+	width: 100%
+	height: 100%
+	background-color: $dark-background
+	display: grid
+	grid-template-columns: 20% auto
+	grid-template-rows: 5% auto
+	grid-template-areas: "main-menu main-menu" "mixer workspace"
+
+
+#main-menu
+	grid-area: main-menu
+
+
+#mixer
+	grid-area: mixer
+	svg
+		width: 100%
+		height: 100%
+	margin-right: 5px
+	
+	.track-mixer
+		rect
+			fill: #4f4f4f
+		text
+			fill: white
+			opacity: 0.6
+			text-anchor: start
+			dominant-baseline: hanging
+			cursor: pointer
+
+
+#workspace
+	grid-area: workspace
+	background-color: $light-background
+	overflow: scroll
+	svg
+		width: max(100%, 3000px)
+		// 95% because otherwise we always get a scrollbar for some reason
+		height: max(95%, 2000px)
+	
+	.track-separator
+		stroke: black
+		stroke-dasharray: 8px
+	
+	.snippet
+		rect
+			fill: #e8e8e8
+			stroke: black
+			stroke-width: 2px
+			stroke-opacity: 0.25
+		text
+			fill: black
+			opacity: 0.5
+		:hover
+			cursor: pointer
+		
+		.recording-indicator
+			fill: none
+			stroke: black
+			stroke-width: 1px
+			stroke-opacity: 0.75
+		&:not(.recording) .recording-indicator
+			visibility: hidden
+		
+		&.clone
+			opacity: 0.8
+		
+		&.selected rect, &.indirectly-selected rect
+			fill: #eacd5b
+		&.selected rect
+			// same as #eacd5b except with alpha
+			filter: drop-shadow(0px 0px 5px rgba(234, 205, 91, 0.75))
