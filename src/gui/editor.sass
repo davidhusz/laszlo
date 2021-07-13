@@ -13,9 +13,10 @@ body
 	height: 100%
 	background-color: $dark-background
 	display: grid
-	grid-template-columns: 20% auto
-	grid-template-rows: 5% auto
-	grid-template-areas: "main-menu main-menu" "mixer workspace"
+	// TODO: select min values for all but the workspace
+	grid-template-columns: 17.5% auto
+	grid-template-rows: 5% auto 40%
+	grid-template-areas: "main-menu main-menu" "mixer workspace" "info-panel info-panel"
 
 
 #main-menu
@@ -81,3 +82,11 @@ body
 		&.selected rect
 			// same as #eacd5b except with alpha
 			filter: drop-shadow(0px 0px 5px rgba(234, 205, 91, 0.75))
+
+
+#info-panel
+	grid-area: info-panel
+	margin-top: 5px
+	h1
+		color: white
+		text-align: center
