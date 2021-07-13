@@ -46,6 +46,10 @@
 	width: max(100%, 3000px);
 	height: max(95%, 2000px);  /* 95% because otherwise we always get a scrollbar for some reason */
 }
+.track-workspace .track-separator {
+	stroke: black;
+	stroke-dasharray: 8px;
+}
 .snippet rect {
 	fill: #e8e8e8;
 	stroke: black;
