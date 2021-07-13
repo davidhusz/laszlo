@@ -16,9 +16,6 @@ class Program {
 	constructor(attrs, tracks, options = {}) {
 		this.attrs = attrs;
 		this.tracks = tracks;
-		this.tracks.forEach(track => {
-			track.getIndex = () =>
-				this.tracks.indexOf(track);
 		[...this.tracks, ...this.snippets].forEach(item => {
 			item.containingProgram = this;
 		});
@@ -142,13 +139,14 @@ class Program {
 	
 	updateMixer() {
 		this.mixerContainer.innerHTML = this.renderMixer();
+		this.tracks.forEach(track => track.addHandlers());
 	}
 	
 	updateWorkspace() {
 		this.calculateSnippetPositions();
 		this.calculateSnippetStyles();
 		this.workspaceContainer.innerHTML = this.renderWorkspace();
-		this.snippets.forEach(item => item.addHandlers());
+		[...this.tracks, ...this.snippets].forEach(item => item.addHandlers());
 	}
 }
 
@@ -164,17 +162,33 @@ class Track {
 		return document.getElementById(this.attrs.id);
 	}
 	
+	get index() {
+		return this.containingProgram.tracks.indexOf(this);
+	}
+	
 	get y() {
-		return 5 + this.getIndex() * this.height;
+		return 5 + this.index * this.height;
 	}
 	
 	get y2() {
 		return this.y + this.height;
 	}
 	
+	rename() {
+		let newName = prompt("Please enter a new name for this track:", this.attrs.name);
+		if (newName !== null) {
+			this.attrs.name = newName;
+			this.containingProgram.updateMixer();
+		}
+	}
+	
+	addHandlers() {
+		this.container.querySelector("text").onclick = this.rename.bind(this);
+	}
+	
 	renderMixer() {
 		return `
-			<g class="track-mixer">
+			<g class="track-mixer" id="${this.attrs.id}">
 				<rect x="0" y="${this.y}" width="100%" height="${this.height}px" opacity="0"/>
 				<rect x="0" y="${this.y}" width="100%" height="45px"/>
 				<text x="10px" y="${this.y + 10}px" font-size="25px">${this.attrs.name}</text>
@@ -185,7 +199,7 @@ class Track {
 	
 	renderWorkspace() {
 		return `
-			<g class="track-workspace" id="${this.attrs.id}">
+			<g class="track-workspace">
 				${this.snippets.join("")}
 			</g>
 		`;

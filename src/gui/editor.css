@@ -40,6 +40,7 @@
 	font-family: sans-serif;
 	text-anchor: start;
 	dominant-baseline: hanging;
+	cursor: pointer;
 }
 .track-mixer line {
 	stroke: #242424;
