@@ -116,7 +116,7 @@ class Program {
 	}
 	
 	clearSelection() {
-		this.snippets.forEach(snippet => snippet.unselect());
+		this.snippets.forEach(snippet => snippet.selected = false);
 	}
 	
 	renderMixer() {
@@ -217,8 +217,8 @@ class Snippet {
 		this.recording = false;
 		this.clones = [];
 		this.isClone = false;
-		// this.selected = false;
-		// this.indirectlySelected = false;
+		this._selected = false;
+		this._indirectlySelected = false;
 	}
 	
 	get container() {
@@ -254,61 +254,74 @@ class Snippet {
 		return relatives;
 	}
 	
-	select() {
-		this.container.classList.add("selected");
-		this.container.classList.remove("indirectly-selected");
-		this.relatives.forEach(relative => {
-			if (!relative.isSelected()) {
-				relative.container.classList.add("indirectly-selected");
-			}
-		});
+	get selected() {
+		return this._selected;
 	}
 	
-	unselect() {
-		this.container.classList.remove("selected");
-		if (!this.relatives.some(relative =>
-			relative.isSelected()
-		)) {
+	get indirectlySelected() {
+		return this._indirectlySelected;
+	}
+	
+	set selected(value) {
+		if (value) {
+			this.container.classList.add("selected");
+			this.indirectlySelected = false;
 			this.relatives.forEach(relative => {
-				relative.container.classList.remove("indirectly-selected");
+				if (!relative.selected) {
+					relative.indirectlySelected = true;
+				}
 			});
+			this._selected = true;
 		} else {
-			this.container.classList.add("indirectly-selected");
+			this.container.classList.remove("selected");
+			if (!this.relatives.some(relative => relative.selected)) {
+				this.relatives.forEach(relative => {
+					relative.indirectlySelected = false;
+				});
+			} else {
+				this.indirectlySelected = true;
+			}
+			this._selected = false;
 		}
 	}
 	
-	isSelected() {
-		return this.container.classList.contains("selected");
+	set indirectlySelected(value) {
+		if (value) {
+			this.container.classList.add("indirectly-selected");
+			this._indirectlySelected = true;
+		} else {
+			this.container.classList.remove("indirectly-selected");
+			this._indirectlySelected = false;
+		}
 	}
-	
+		
 	handleClick(event) {
 		// hold shift while clicking for selecting multiple snippets
 		if (!event.shiftKey) {
-			if (!this.isSelected()) {
+			if (!this.selected) {
 				// if `this` is not yet directly selected, make it the only directly
 				// selected snippet
 				this.containingProgram.clearSelection();
-				this.select();
+				this.selected = true;
 			} else {
 				// if `this` is the only directly selected snippet, clear selection,
 				// otherwise clear selection and then select `this`
-				let currentlySelected = this.containingProgram.snippets.filter(snippet =>
-					snippet.isSelected()
-				);
+				let currentlySelected =
+					this.containingProgram.snippets.filter(snippet => snippet.selected);
 				if (currentlySelected.length == 1) {
 					this.containingProgram.clearSelection();
 				} else {
 					this.containingProgram.clearSelection();
-					this.select();
+					this.selected = true;
 				}
 			}
 		} else {
-			if (!this.isSelected()) {
+			if (!this.selected) {
 				// add `this` to directly selected snippets
-				this.select();
+				this.selected = true;
 			} else {
 				// make `this` no longer directly selected
-				this.unselect();
+				this.selected = false;
 			}
 		}
 	}
@@ -329,7 +342,9 @@ class Snippet {
 	getCSSClasses() {
 		return "snippet " +
 			[[this.recording, "recording"],
-			[this.isClone, "clone"]]
+			[this.isClone, "clone"],
+			[this.selected, "selected"],
+			[this.indirectlySelected, "indirectly-selected"]]
 			.map(prop => prop[0] ? prop[1] : "")
 			.join(" ");
 	}
