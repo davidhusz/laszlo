@@ -277,6 +277,25 @@ class Snippet {
 		}
 	}
 	
+	handleClick(event) {
+		if (!event.shiftKey) {
+			if (!this.container.classList.contains("selected")) {
+				this.containingProgram.clearSelection();
+				this.select();
+			} else {
+				// ideally this should clear selection if `this` is the only one selected,
+				// otherwise clear selection and then select `this`
+				this.containingProgram.clearSelection();
+			}
+		} else {
+			if (!this.container.classList.contains("selected")) {
+				this.select();
+			} else {
+				this.unselect();
+			}
+		}
+	}
+	
 	rename() {
 		let newName = prompt("Please enter a new name for the snippet:", this.attrs.name);
 		if (newName !== null) {
@@ -286,25 +305,7 @@ class Snippet {
 	}
 	
 	addHandlers() {
-		this.container.querySelector("rect").onclick = (event) => {
-			if (!event.shiftKey) {
-				if (!this.container.classList.contains("selected")) {
-					this.containingProgram.clearSelection();
-					this.select();
-				} else {
-					// ideally this should clear selection if `this` is the only one selected,
-					// otherwise clear selection and then select `this`
-					this.containingProgram.clearSelection();
-				}
-			} else {
-				if (!this.container.classList.contains("selected")) {
-					this.select();
-				} else {
-					this.unselect();
-				}
-			}
-		};
-		
+		this.container.querySelector("rect").onclick = this.handleClick.bind(this);
 		this.container.querySelector("text").onclick = this.rename.bind(this);
 	}
 	
