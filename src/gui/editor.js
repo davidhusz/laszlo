@@ -19,6 +19,8 @@ class Program {
 		this.tracks.forEach(track => {
 			track.getIndex = () =>
 				this.tracks.indexOf(track);
+		[...this.tracks, ...this.snippets].forEach(item => {
+			item.containingProgram = this;
 		});
 		if ("mixerContainer" in options) {
 			this.mixerContainer = options.mixerContainer;
@@ -107,10 +109,17 @@ class Program {
 				case "stream":
 					break;
 				case "ref":
-					this.getSnippetById(snippet.attrs.source.ref.id).recording = true;
-					snippet.clone = true;
+					let referencedSnippet = this.getSnippetById(snippet.attrs.source.ref.id);
+					referencedSnippet.recording = true;
+					referencedSnippet.clones.push(snippet);
+					snippet.isClone = true;
+					snippet.source = referencedSnippet;
 			}
 		}
+	}
+	
+	clearSelection() {
+		this.snippets.forEach(snippet => snippet.unselect());
 	}
 	
 	renderMixer() {
@@ -139,7 +148,7 @@ class Program {
 		this.calculateSnippetPositions();
 		this.calculateSnippetStyles();
 		this.workspaceContainer.innerHTML = this.renderWorkspace();
-		this.addHandlers();
+		this.snippets.forEach(item => item.addHandlers());
 	}
 }
 
@@ -190,7 +199,10 @@ class Snippet {
 		this.width = 200;
 		this.height = 100;
 		this.recording = false;
-		this.clone = false;
+		this.clones = [];
+		this.isClone = false;
+		// this.selected = false;
+		// this.indirectlySelected = false;
 	}
 	
 	get container() {
@@ -213,10 +225,67 @@ class Snippet {
 		return this.y + (this.height / 2);
 	}
 	
+	get relatives() {
+		let relatives = this.clones;
+		if (this.isClone) {
+			relatives.push(this.source);
+			this.source.clones.forEach(clone => {
+				if (clone !== this) {
+					relatives.push(clone);
+				}
+			});
+		}
+		return relatives;
+	}
+	
+	select() {
+		this.container.classList.add("selected");
+		this.container.classList.remove("indirectly-selected");
+		this.relatives.forEach(relative => {
+			if (!relative.container.classList.contains("selected")) {
+				relative.container.classList.add("indirectly-selected");
+			}
+		});
+	}
+	
+	unselect() {
+		this.container.classList.remove("selected");
+		if (!this.relatives.some(relative =>
+			relative.container.classList.contains("selected")
+		)) {
+			this.relatives.forEach(relative => {
+				relative.container.classList.remove("indirectly-selected");
+			});
+		} else {
+			this.container.classList.add("indirectly-selected");
+		}
+	}
+	
+	addHandlers() {
+		this.container.querySelector("rect").onclick = (event) => {
+			if (!event.shiftKey) {
+				if (!this.container.classList.contains("selected")) {
+					this.containingProgram.clearSelection();
+					this.select();
+				} else {
+					// ideally this should clear selection if `this` is the only one selected,
+					// otherwise clear selection and then select `this`
+					this.containingProgram.clearSelection();
+				}
+			} else {
+				if (!this.container.classList.contains("selected")) {
+					this.select();
+				} else {
+					this.unselect();
+				}
+			}
+		};
+	}
+	
 	getCSSClasses() {
 		return "snippet " +
 			[[this.recording, "recording"],
-			[this.clone, "clone"]]
+			[this.isClone, "clone"]]
 			.map(prop => prop[0] ? prop[1] : "")
 			.join(" ");
 	}
