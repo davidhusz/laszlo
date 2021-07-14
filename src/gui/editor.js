@@ -466,6 +466,11 @@ class Snippet {
 						<td><button class="edit-name">edit</button></td>
 					</tr>
 					<tr>
+						<th>track</th>
+						<td>${this.containingTrack.attrs.name}</td>
+						<td><button class="edit-track">edit</button></td>
+					</tr>
+					<tr>
 						<th>source</th>
 						<td>${this.getPropertyInfoText(this.attrs.source)}</td>
 						<td><button class="edit-source">edit</button></td>
