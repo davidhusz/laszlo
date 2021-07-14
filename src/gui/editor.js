@@ -57,6 +57,14 @@ class Program {
 	getTrackBySnippet(snippet) {
 		return this.tracks.find(track => track.snippets.includes(snippet));
 	}
+	
+	getSelectedSnippets() {
+		return this.snippets.filter(snippet => snippet.selected);
+	}
+	
+	clearSelection() {
+		this.snippets.forEach(snippet => snippet.selected = false);
+	}
 		
 	getBoundaryCoordinate(boundary) {
 		let boundaryType = Object.keys(boundary)[0];
@@ -103,14 +111,6 @@ class Program {
 					snippet.source = referencedSnippet;
 			}
 		}
-	}
-	
-	getSelectedSnippets() {
-		return this.snippets.filter(snippet => snippet.selected);
-	}
-	
-	clearSelection() {
-		this.snippets.forEach(snippet => snippet.selected = false);
 	}
 	
 	renderMixer() {
