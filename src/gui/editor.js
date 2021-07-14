@@ -97,7 +97,7 @@ class Program {
 		}
 	}
 	
-	calculateSnippetStyles() {
+	determineSnippetRelatives() {
 		for (let snippet of this.snippets) {
 			let sourceType = Object.keys(snippet.attrs.source)[0];
 			switch (sourceType) {
@@ -135,7 +135,7 @@ class Program {
 	}
 	
 	updateWorkspace() {
-		this.calculateSnippetStyles();
+		this.determineSnippetRelatives();
 		this.workspaceContainer.innerHTML = this.renderWorkspace();
 		[...this.tracks, ...this.snippets].forEach(item => item.addHandlers());
 	}
