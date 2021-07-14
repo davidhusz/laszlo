@@ -136,7 +136,7 @@ class Program {
 				}
 			}
 			
-			for (let button of document.querySelectorAll(".snippet-info [class^=edit-]")) {
+			for (let button of document.querySelectorAll(".snippet-info button")) {
 				let actions = { "edit-name": snippet.rename };
 				if (button.className in actions) {
 					button.onclick = actions[button.className].bind(snippet);
@@ -463,27 +463,27 @@ class Snippet {
 					<tr>
 						<th>name</th>
 						<td>${this.attrs.name}</td>
-						<td class="edit-name">edit</td>
+						<td><button class="edit-name">edit</button></td>
 					</tr>
 					<tr>
 						<th>source</th>
 						<td>${this.getPropertyInfoText(this.attrs.source)}</td>
-						<td class="edit-source">edit</td>
+						<td><button class="edit-source">edit</button></td>
 					</tr>
 					<tr>
 						<th>start</th>
 						<td>${this.getPropertyInfoText(this.attrs.start)}</td>
-						<td class="edit-start">edit</td>
+						<td><button class="edit-start">edit</button></td>
 					</tr>
 					<tr>
 						<th>end</th>
 						<td>${"end" in this.attrs ? this.getPropertyInfoText(this.attrs.end) : ""}</td>
-						<td class="edit-end">edit</td>
+						<td><button class="edit-end">edit</button></td>
 					</tr>
 					<tr>
 						<th>duration</th>
 						<td>${"dur" in this.attrs ? this.getPropertyInfoText(this.attrs.dur) : ""}</td>
-						<td class="edit-dur">edit</td>
+						<td><button class="edit-dur">edit</button></td>
 					</tr>
 				</table>
 			</div></div>
