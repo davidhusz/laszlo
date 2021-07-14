@@ -137,7 +137,10 @@ class Program {
 			}
 			
 			for (let button of document.querySelectorAll(".snippet-info button")) {
-				let actions = { "edit-name": snippet.rename };
+				let actions = {
+					"edit-name": snippet.rename,
+					"edit-track": snippet.changeTrack
+				};
 				if (button.className in actions) {
 					button.onclick = actions[button.className].bind(snippet);
 				}
@@ -161,19 +164,32 @@ class Program {
 		`;
 	}
 	
-	renderInfoPanel() {
+	renderSnippetInfo() {
 		let selectedSnippets = this.getSelectedSnippets();
-		let infoPanelContent = "";
 		if (selectedSnippets.length == 1) {
-			infoPanelContent = selectedSnippets[0].renderInfoPanel();
+			return selectedSnippets[0].renderInfoPanel();
+		} else {
+			return "";
 		}
+	}
+	
+	renderSelectionCount() {
+		let selectedSnippetsCount = this.getSelectedSnippets().length;
+		let isModified = Array.from(document.querySelectorAll(".snippet-info td"))
+			.some(propInfo =>
+				propInfo.dataset.modifiedValue !== propInfo.dataset.originalValue
+			);
 		return `
-			${infoPanelContent}
 			<div class="selection-count"><div>
-				${selectedSnippets.length}
-				${selectedSnippets.length == 1 ? "snippet" : "snippets"} selected
+				${selectedSnippetsCount}
+				${selectedSnippetsCount == 1 ? "snippet" : "snippets"} selected
+				${isModified ? " - <strong>modified</strong>" : ""}
 			</div></div>
 		`;
+	}
+	
+	renderInfoPanel() {
+		return this.renderSnippetInfo() + this.renderSelectionCount();
 	}
 	
 	updateMixer() {
@@ -186,6 +202,14 @@ class Program {
 		this.workspaceContainer.innerHTML = this.renderWorkspace();
 		this.snippets.forEach(snippet => snippet.setTransformOrigin());
 		[...this.tracks, ...this.snippets].forEach(item => item.addHandlers());
+	}
+	
+	updateSnippetInfo() {
+		document.querySelector(".snippet-info").outerHTML = this.renderSnippetInfo();
+	}
+	
+	updateSelectionCount() {
+		document.querySelector(".selection-count").outerHTML = this.renderSelectionCount();
 	}
 	
 	updateInfoPanel() {
@@ -387,6 +411,25 @@ class Snippet {
 		}
 	}
 	
+	changeTrack() {
+		let trackInfo = document.querySelector(".snippet-info .info-track");
+		trackInfo.innerHTML = `
+			<select>
+				${this.containingProgram.tracks.map(track => `
+					<option value="${track.attrs.id}"
+							${track.attrs.id == this.containingTrack.attrs.id ? "selected" : ""}>
+						${track.attrs.name}
+					</option>
+				`).join("")}
+			</select>
+		`;
+		let editor = trackInfo.querySelector("select");
+		editor.onchange = () => {
+			trackInfo.dataset.modifiedValue = editor.value;
+			this.containingProgram.updateSelectionCount();
+		};
+	}
+	
 	rename() {
 		let newName = prompt("Please enter a new name for the snippet:", this.attrs.name);
 		if (newName !== null) {
@@ -467,7 +510,9 @@ class Snippet {
 					</tr>
 					<tr>
 						<th>track</th>
-						<td>${this.containingTrack.attrs.name}</td>
+						<td class="info-track" data-original-value="${this.containingTrack.attrs.id}">
+							${this.containingTrack.attrs.name}
+						</td>
 						<td><button class="edit-track">edit</button></td>
 					</tr>
 					<tr>
