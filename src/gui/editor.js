@@ -251,7 +251,7 @@ class Track {
 			<g class="track-workspace">
 				<line class="track-separator" x1="0px" y1="${this.y2}px"
 					x2="100%" y2="${this.y2}px"/>
-				${this.snippets.join("")}
+				${this.snippets.map(snippet => snippet.renderWorkspace()).join("")}
 			</g>
 		`;
 	}
@@ -441,7 +441,7 @@ class Snippet {
 			.join(" ");
 	}
 	
-	toString() {
+	renderWorkspace() {
 		return `
 			<g class="${this.getCSSClasses()}" id="${this.attrs.id}">
 				<rect x="${this.x}px" y="${this.y}px"
