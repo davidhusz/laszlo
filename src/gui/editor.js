@@ -54,6 +54,10 @@ class Program {
 		return this.snippets.find(snippet => snippet.attrs.id == id);
 	}
 	
+	getTrackById(id) {
+		return this.tracks.find(track => track.attrs.id == id);
+	}
+	
 	getTrackBySnippet(snippet) {
 		return this.tracks.find(track => track.snippets.includes(snippet));
 	}
@@ -64,6 +68,13 @@ class Program {
 	
 	clearSelection() {
 		this.snippets.forEach(snippet => snippet.selected = false);
+	}
+	
+	isCurrentlySelectedSnippetModified() {
+		return Array.from(document.querySelectorAll(".snippet-info [class^=info]"))
+			.some(propInfo =>
+				propInfo.dataset.modifiedValue !== propInfo.dataset.originalValue
+			);
 	}
 		
 	getBoundaryCoordinate(boundary) {
@@ -113,6 +124,14 @@ class Program {
 		}
 	}
 	
+	addMasterButtonHandlers() {
+		let snippetInfoContainer = document.querySelector(".snippet-info table");
+		if (snippetInfoContainer !== null) {
+			let snippet = this.getSnippetById(snippetInfoContainer.dataset.snippetId);
+			document.querySelector(".master-buttons .save").onclick = snippet.saveModifications.bind(snippet);
+		}
+	}
+	
 	addInfoPanelHandlers() {
 		let snippetInfoContainer = document.querySelector(".snippet-info table");
 		
@@ -136,7 +155,7 @@ class Program {
 				}
 			}
 			
-			for (let button of document.querySelectorAll(".snippet-info button")) {
+			for (let button of document.querySelectorAll(".snippet-info table button")) {
 				let actions = {
 					"edit-name": snippet.rename,
 					"edit-track": snippet.changeTrack
@@ -146,6 +165,7 @@ class Program {
 				}
 			}
 		}
+		this.addMasterButtonHandlers();
 	}
 	
 	renderMixer() {
@@ -175,26 +195,29 @@ class Program {
 		return `
 			<div class="snippet-info">
 				${tableContent}
-				<div class="master-buttons">
-					<button>save</button>
-					<button>cancel</button>
-					<button>delete</button>
-				</div>
+				${this.renderMasterButtons()}
+			</div>
+		`;
+	}
+	
+	renderMasterButtons() {
+		let disabled = this.isCurrentlySelectedSnippetModified() ? "" : "disabled";
+		return `
+			<div class="master-buttons">
+				<button class="save" ${disabled}>save</button>
+				<button class="cancel "${disabled}>cancel</button>
+				<button class="delete">delete</button>
 			</div>
 		`;
 	}
 	
 	renderSelectionCount() {
 		let selectedSnippetsCount = this.getSelectedSnippets().length;
-		let isModified = Array.from(document.querySelectorAll(".snippet-info td"))
-			.some(propInfo =>
-				propInfo.dataset.modifiedValue !== propInfo.dataset.originalValue
-			);
 		return `
 			<div class="selection-count"><div>
 				${selectedSnippetsCount}
 				${selectedSnippetsCount == 1 ? "snippet" : "snippets"} selected
-				${isModified ? " - <strong>modified</strong>" : ""}
+				${this.isCurrentlySelectedSnippetModified() ? " - <strong>modified</strong>" : ""}
 			</div></div>
 		`;
 	}
@@ -219,6 +242,11 @@ class Program {
 		document.querySelector(".snippet-info").outerHTML = this.renderSnippetInfo();
 	}
 	
+	updateMasterButtons() {
+		document.querySelector(".master-buttons").outerHTML = this.renderMasterButtons();
+		this.addMasterButtonHandlers();
+	}
+	
 	updateSelectionCount() {
 		document.querySelector(".selection-count").outerHTML = this.renderSelectionCount();
 	}
@@ -226,6 +254,12 @@ class Program {
 	updateInfoPanel() {
 		this.infoPanelContainer.innerHTML = this.renderInfoPanel();
 		this.addInfoPanelHandlers();
+	}
+	
+	updateAll() {
+		this.updateMixer();
+		this.updateWorkspace();
+		this.updateInfoPanel();
 	}
 }
 
@@ -255,6 +289,15 @@ class Track {
 	
 	get y2() {
 		return this.y + this.height;
+	}
+	
+	addSnippet(snippet) {
+		this.snippets.push(snippet);
+		snippet.containingTrack = this;
+	}
+	
+	removeSnippet(snippet) {
+		this.snippets = this.snippets.filter(elem => elem !== snippet);
 	}
 	
 	rename() {
@@ -437,6 +480,7 @@ class Snippet {
 		let editor = trackInfo.querySelector("select");
 		editor.onchange = () => {
 			trackInfo.dataset.modifiedValue = editor.value;
+			this.containingProgram.updateMasterButtons();
 			this.containingProgram.updateSelectionCount();
 		};
 	}
@@ -447,6 +491,23 @@ class Snippet {
 			this.attrs.name = newName;
 			this.container.querySelector("text").innerHTML = this.attrs.name ?? "";
 		}
+	}
+	
+	saveModifications() {
+		for (let propInfo of document.querySelectorAll(".snippet-info [class^=info]")) {
+			if (propInfo.dataset.modifiedValue !== undefined &&
+				propInfo.dataset.modifiedValue != propInfo.dataset.originalValue) {
+					switch (propInfo.className) {
+						case "info-track":
+							this.containingTrack.removeSnippet(this);
+							let newTrack = this.containingProgram.getTrackById(propInfo.dataset.modifiedValue);
+							newTrack.addSnippet(this);
+							break;
+					}
+			}
+		}
+		this.containingProgram.updateAll();
+		this.containingProgram.clearSelection();
 	}
 	
 	addHandlers() {
