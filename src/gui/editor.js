@@ -161,6 +161,21 @@ class Program {
 		`;
 	}
 	
+	renderInfoPanel() {
+		let selectedSnippets = this.getSelectedSnippets();
+		let infoPanelContent = "";
+		if (selectedSnippets.length == 1) {
+			infoPanelContent = selectedSnippets[0].renderInfoPanel();
+		}
+		return `
+			${infoPanelContent}
+			<div class="selection-count"><div>
+				${selectedSnippets.length}
+				${selectedSnippets.length == 1 ? "snippet" : "snippets"} selected
+			</div></div>
+		`;
+	}
+	
 	updateMixer() {
 		this.mixerContainer.innerHTML = this.renderMixer();
 		this.tracks.forEach(track => track.addHandlers());
@@ -174,18 +189,7 @@ class Program {
 	}
 	
 	updateInfoPanel() {
-		let selectedSnippets = this.getSelectedSnippets();
-		let infoPanelContent = "";
-		if (selectedSnippets.length == 1) {
-			infoPanelContent = selectedSnippets[0].renderInfoPanel();
-		}
-		this.infoPanelContainer.innerHTML = `
-			${infoPanelContent}
-			<div class="selection-count"><div>
-				${selectedSnippets.length}
-				${selectedSnippets.length == 1 ? "snippet" : "snippets"} selected
-			</div></div>
-		`;
+		this.infoPanelContainer.innerHTML = this.renderInfoPanel();
 		this.addInfoPanelHandlers();
 	}
 }
