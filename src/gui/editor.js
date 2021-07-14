@@ -113,6 +113,38 @@ class Program {
 		}
 	}
 	
+	addInfoPanelHandlers() {
+		let snippetInfoContainer = document.querySelector(".snippet-info");
+		
+		if (snippetInfoContainer !== null) {
+			let snippet = this.getSnippetById(snippetInfoContainer.dataset.snippetId);
+			
+			for (let snippetRef of document.querySelectorAll(".snippet-info span")) {
+				let referencedSnippet = this.getSnippetById(snippetRef.dataset.refId)
+				let refPeekOn = () => {
+					referencedSnippet.container.classList.add("ref-peek");
+				};
+				let refPeekOff = () => {
+					referencedSnippet.container.classList.remove("ref-peek");
+				};
+				snippetRef.onmouseenter = refPeekOn;
+				snippetRef.onmouseleave = refPeekOff;
+				snippetRef.onclick = () => {
+					refPeekOff();
+					this.clearSelection();
+					referencedSnippet.selected = true;
+				}
+			}
+			
+			for (let button of document.querySelectorAll(".snippet-info [class^=edit-]")) {
+				let actions = { "edit-name": snippet.rename };
+				if (button.className in actions) {
+					button.onclick = actions[button.className].bind(snippet);
+				}
+			}
+		}
+	}
+	
 	renderMixer() {
 		return `
 			<svg>
@@ -143,12 +175,18 @@ class Program {
 	
 	updateInfoPanel() {
 		let selectedSnippets = this.getSelectedSnippets();
+		let infoPanelContent = "";
+		if (selectedSnippets.length == 1) {
+			infoPanelContent = selectedSnippets[0].renderInfoPanel();
+		}
 		this.infoPanelContainer.innerHTML = `
-			<h1>
+			${infoPanelContent}
+			<div class="selection-count"><div>
 				${selectedSnippets.length}
 				${selectedSnippets.length == 1 ? "snippet" : "snippets"} selected
-			</h1>
+			</div></div>
 		`;
+		this.addInfoPanelHandlers();
 	}
 }
 
@@ -358,6 +396,37 @@ class Snippet {
 		this.container.querySelector("text").onclick = this.rename.bind(this);
 	}
 	
+	getPropertyInfoText(prop) {
+		let propType = Object.keys(prop)[0];
+		switch (propType) {
+			case "ref":
+				let refName = this.containingProgram.getSnippetById(prop.ref.id).attrs.name;
+				let refText = `
+					<span class="snippet-ref" data-ref-id="${prop.ref.id}">
+						${refName ?? "unnamed snippet"}
+					</span>
+				`;
+				if ("prop" in prop.ref) {
+					let refProp = prop.ref.prop.replace(/^dur$/, "duration");
+					return `tied to ${refProp} of ${refText}`;
+				} else {
+					return `clone of ${refText}`;
+				}
+				break;
+			case "event":
+				let dict = { button_press: "button press", boot: "boot" };
+				return dict[prop.event] + " event";
+				break;
+			case "stream":
+				if (prop.stream == "input") {
+					return "live input";
+				}
+				break;
+			default:
+				return JSON.stringify(prop);
+		}
+	}
+	
 	getCSSClasses() {
 		return "snippet " +
 			[[this.recording, "recording"],
@@ -379,6 +448,41 @@ class Snippet {
 				<circle class="recording-indicator"
 					cx="${this.x2 - 10}" cy="${this.y + 10}" r="5px"/>
 			</g>
+		`;
+	}
+	
+	renderInfoPanel() {
+		return `
+			<div class="snippet-info" data-snippet-id="${this.attrs.id}"><div>
+				<!-- <div class="snippet-name">${this.attrs.name}</div> -->
+				<table>
+					<tr>
+						<th>name</th>
+						<td>${this.attrs.name}</td>
+						<td class="edit-name">edit</td>
+					</tr>
+					<tr>
+						<th>source</th>
+						<td>${this.getPropertyInfoText(this.attrs.source)}</td>
+						<td class="edit-source">edit</td>
+					</tr>
+					<tr>
+						<th>start</th>
+						<td>${this.getPropertyInfoText(this.attrs.start)}</td>
+						<td class="edit-start">edit</td>
+					</tr>
+					<tr>
+						<th>end</th>
+						<td>${"end" in this.attrs ? this.getPropertyInfoText(this.attrs.end) : ""}</td>
+						<td class="edit-end">edit</td>
+					</tr>
+					<tr>
+						<th>duration</th>
+						<td>${"dur" in this.attrs ? this.getPropertyInfoText(this.attrs.dur) : ""}</td>
+						<td class="edit-dur">edit</td>
+					</tr>
+				</table>
+			</div></div>
 		`;
 	}
 }
