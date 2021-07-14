@@ -114,7 +114,7 @@ class Program {
 	}
 	
 	addInfoPanelHandlers() {
-		let snippetInfoContainer = document.querySelector(".snippet-info");
+		let snippetInfoContainer = document.querySelector(".snippet-info table");
 		
 		if (snippetInfoContainer !== null) {
 			let snippet = this.getSnippetById(snippetInfoContainer.dataset.snippetId);
@@ -165,12 +165,23 @@ class Program {
 	}
 	
 	renderSnippetInfo() {
+		let tableContent;
 		let selectedSnippets = this.getSelectedSnippets();
 		if (selectedSnippets.length == 1) {
-			return selectedSnippets[0].renderInfoPanel();
+			tableContent = selectedSnippets[0].renderInfoPanel();
 		} else {
-			return "";
+			tableContent = "";
 		}
+		return `
+			<div class="snippet-info">
+				${tableContent}
+				<div class="master-buttons">
+					<button>save</button>
+					<button>cancel</button>
+					<button>delete</button>
+				</div>
+			</div>
+		`;
 	}
 	
 	renderSelectionCount() {
@@ -500,43 +511,40 @@ class Snippet {
 	
 	renderInfoPanel() {
 		return `
-			<div class="snippet-info" data-snippet-id="${this.attrs.id}"><div>
-				<!-- <div class="snippet-name">${this.attrs.name}</div> -->
-				<table>
-					<tr>
-						<th>name</th>
-						<td>${this.attrs.name}</td>
-						<td><button class="edit-name">edit</button></td>
-					</tr>
-					<tr>
-						<th>track</th>
-						<td class="info-track" data-original-value="${this.containingTrack.attrs.id}">
-							${this.containingTrack.attrs.name}
-						</td>
-						<td><button class="edit-track">edit</button></td>
-					</tr>
-					<tr>
-						<th>source</th>
-						<td>${this.getPropertyInfoText(this.attrs.source)}</td>
-						<td><button class="edit-source">edit</button></td>
-					</tr>
-					<tr>
-						<th>start</th>
-						<td>${this.getPropertyInfoText(this.attrs.start)}</td>
-						<td><button class="edit-start">edit</button></td>
-					</tr>
-					<tr>
-						<th>end</th>
-						<td>${"end" in this.attrs ? this.getPropertyInfoText(this.attrs.end) : ""}</td>
-						<td><button class="edit-end">edit</button></td>
-					</tr>
-					<tr>
-						<th>duration</th>
-						<td>${"dur" in this.attrs ? this.getPropertyInfoText(this.attrs.dur) : ""}</td>
-						<td><button class="edit-dur">edit</button></td>
-					</tr>
-				</table>
-			</div></div>
+			<table data-snippet-id="${this.attrs.id}">
+				<tr>
+					<th>name</th>
+					<td>${this.attrs.name}</td>
+					<td><button class="edit-name">edit</button></td>
+				</tr>
+				<tr>
+					<th>track</th>
+					<td class="info-track" data-original-value="${this.containingTrack.attrs.id}">
+						${this.containingTrack.attrs.name}
+					</td>
+					<td><button class="edit-track">edit</button></td>
+				</tr>
+				<tr>
+					<th>source</th>
+					<td>${this.getPropertyInfoText(this.attrs.source)}</td>
+					<td><button class="edit-source">edit</button></td>
+				</tr>
+				<tr>
+					<th>start</th>
+					<td>${this.getPropertyInfoText(this.attrs.start)}</td>
+					<td><button class="edit-start">edit</button></td>
+				</tr>
+				<tr>
+					<th>end</th>
+					<td>${"end" in this.attrs ? this.getPropertyInfoText(this.attrs.end) : ""}</td>
+					<td><button class="edit-end">edit</button></td>
+				</tr>
+				<tr>
+					<th>duration</th>
+					<td>${"dur" in this.attrs ? this.getPropertyInfoText(this.attrs.dur) : ""}</td>
+					<td><button class="edit-dur">edit</button></td>
+				</tr>
+			</table>
 		`;
 	}
 }
