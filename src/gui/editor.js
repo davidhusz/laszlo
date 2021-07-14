@@ -245,9 +245,9 @@ class Track {
 	renderWorkspace() {
 		return `
 			<g class="track-workspace">
-				${this.snippets.join("")}
 				<line class="track-separator" x1="0px" y1="${this.y2}px"
 					x2="100%" y2="${this.y2}px"/>
+				${this.snippets.join("")}
 			</g>
 		`;
 	}
