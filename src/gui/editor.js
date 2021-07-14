@@ -89,21 +89,6 @@ class Program {
 		}
 	}
 	
-	calculateSnippetPositions() {
-		for (let [i, track] of this.tracks.entries()) {
-			for (let [j, snippet] of track.snippets.entries()) {
-				snippet.x = this.getBoundaryCoordinate(snippet.attrs.start);
-				if ("end" in snippet.attrs) {
-					let endBoundary = this.getBoundaryCoordinate(snippet.attrs.end);
-					if (endBoundary !== null) {
-						snippet.width = endBoundary - snippet.x;
-					}
-				}
-				snippet.y = 10 + (i * 110);
-			}
-		}
-	}
-	
 	calculateSnippetStyles() {
 		for (let snippet of this.snippets) {
 			let sourceType = Object.keys(snippet.attrs.source)[0];
@@ -150,7 +135,6 @@ class Program {
 	}
 	
 	updateWorkspace() {
-		this.calculateSnippetPositions();
 		this.calculateSnippetStyles();
 		this.workspaceContainer.innerHTML = this.renderWorkspace();
 		[...this.tracks, ...this.snippets].forEach(item => item.addHandlers());
@@ -174,6 +158,9 @@ class Track {
 		this.snippets = snippets;
 		this.height = 110;
 		this.padding = 2;
+		this.snippets.forEach(snippet => {
+			snippet.containingTrack = this;
+		});
 	}
 	
 	get container() {
@@ -242,6 +229,14 @@ class Snippet {
 	
 	get container() {
 		return document.getElementById(this.attrs.id);
+	}
+	
+	get x() {
+		return this.containingProgram.getBoundaryCoordinate(this.attrs.start);
+	}
+	
+	get y() {
+		return 10 + (this.containingTrack.index * 110);
 	}
 	
 	get x2() {
