@@ -2,6 +2,9 @@ $dark-background: #242424
 // $light-background: #4f565e
 $light-background: #33383e
 
+@mixin slightly-bigger
+	transform: scale(1.05)
+
 body
 	font-family: sans-serif
 
@@ -79,9 +82,8 @@ body
 		
 		&.selected rect, &.indirectly-selected rect
 			fill: #eacd5b
-		&.selected rect
-			// same as #eacd5b except with alpha
-			filter: drop-shadow(0px 0px 5px rgba(234, 205, 91, 0.75))
+		&.selected
+			@include slightly-bigger
 
 
 #info-panel

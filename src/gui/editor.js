@@ -137,6 +137,7 @@ class Program {
 	updateWorkspace() {
 		this.determineSnippetRelatives();
 		this.workspaceContainer.innerHTML = this.renderWorkspace();
+		this.snippets.forEach(snippet => snippet.setTransformOrigin());
 		[...this.tracks, ...this.snippets].forEach(item => item.addHandlers());
 	}
 	
@@ -225,6 +226,11 @@ class Snippet {
 		this.isClone = false;
 		this._selected = false;
 		this._indirectlySelected = false;
+	}
+	
+	setTransformOrigin() {
+		this.container.style.transformOrigin =
+			`${this.horizontalCenter}px ${this.verticalCenter}px`;
 	}
 	
 	get container() {
