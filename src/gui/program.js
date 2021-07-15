@@ -1,18 +1,5 @@
 "use strict";
 
-// Global variable for development purposes
-var program;
-
-window.addEventListener("DOMContentLoaded", () => {
-	let test_input = `{"program":{"title":"Woman (Oh Woman)","tracks":[{"id":"t1","name":"rhythm guitar","snippets":[{"id":"s1","name":"pre","source":{"stream":"input"},"start":{"event":"boot"},"end":{"event":"button_press"}},{"id":"s2","name":"verse guitar","source":{"stream":"input"},"start":{"ref":{"id":"s1","prop":"end"}},"end":{"event":"button_press"}},{"id":"s3","name":"chorus guitar","source":{"stream":"input"},"start":{"ref":{"id":"s2","prop":"end"}},"end":{"event":"button_press"}},{"id":"s4","source":{"ref":{"id":"s2"}},"start":{"ref":{"id":"s3","prop":"end"}}},{"id":"s5","source":{"ref":{"id":"s3"}},"start":{"ref":{"id":"s4","prop":"end"}}},{"id":"s6","name":"bridge guitar","source":{"stream":"input"},"start":{"ref":{"id":"s5","prop":"end"}},"end":{"event":"button_press"}},{"id":"s12","source":{"ref":{"id":"s3"}},"start":{"ref":{"id":"s6","prop":"end"}}}]},{"id":"t2","name":"bass","snippets":[{"id":"s7","name":"verse bass","source":{"stream":"input"},"start":{"ref":{"id":"s3","prop":"end"}},"dur":{"ref":{"id":"s2","prop":"dur"}}},{"id":"s8","name":"chorus bass","source":{"stream":"input"},"start":{"ref":{"id":"s7","prop":"end"}},"dur":{"ref":{"id":"s3","prop":"dur"}}},{"id":"s9","source":{"ref":{"id":"s8"}},"start":{"ref":{"id":"s6","prop":"end"}}}]},{"id":"t3","name":"lead guitar","snippets":[{"id":"s10","name":"chorus lead guitar","source":{"stream":"input"},"start":{"ref":{"id":"s6","prop":"end"}},"dur":{"ref":{"id":"s3","prop":"dur"}}}]}]},"version":"0.0"}`
-	program = Program.fromJSON(test_input, {
-		mixerContainer: document.querySelector("#mixer"),
-		workspaceContainer: document.querySelector("#workspace"),
-		infoPanelContainer: document.querySelector("#info-panel")
-	});
-});
-
-
 class Program {
 	constructor(attrs, tracks, options = {}) {
 		this.attrs = attrs;
@@ -29,8 +16,9 @@ class Program {
 			this.updateWorkspace();
 		}
 		if ("infoPanelContainer" in options) {
-			this.infoPanelContainer = options.infoPanelContainer;
-			this.updateInfoPanel();
+			this.infoPanel = new InfoPanel(options.infoPanelContainer);
+			this.infoPanel.containingProgram = this;
+			this.infoPanel.update();
 		}
 	}
 	
@@ -70,13 +58,6 @@ class Program {
 		this.snippets.forEach(snippet => snippet.selected = false);
 	}
 	
-	isCurrentlySelectedSnippetModified() {
-		return Array.from(document.querySelectorAll(".snippet-info [class^=info]"))
-			.some(propInfo =>
-				propInfo.dataset.modifiedValue !== propInfo.dataset.originalValue
-			);
-	}
-		
 	getBoundaryCoordinate(boundary) {
 		let boundaryType = Object.keys(boundary)[0];
 		switch (boundaryType) {
@@ -124,50 +105,6 @@ class Program {
 		}
 	}
 	
-	addMasterButtonHandlers() {
-		let snippetInfoContainer = document.querySelector(".snippet-info table");
-		if (snippetInfoContainer !== null) {
-			let snippet = this.getSnippetById(snippetInfoContainer.dataset.snippetId);
-			document.querySelector(".master-buttons .save").onclick = snippet.saveModifications.bind(snippet);
-		}
-	}
-	
-	addInfoPanelHandlers() {
-		let snippetInfoContainer = document.querySelector(".snippet-info table");
-		
-		if (snippetInfoContainer !== null) {
-			let snippet = this.getSnippetById(snippetInfoContainer.dataset.snippetId);
-			
-			for (let snippetRef of document.querySelectorAll(".snippet-info span")) {
-				let referencedSnippet = this.getSnippetById(snippetRef.dataset.refId)
-				let refPeekOn = () => {
-					referencedSnippet.container.classList.add("ref-peek");
-				};
-				let refPeekOff = () => {
-					referencedSnippet.container.classList.remove("ref-peek");
-				};
-				snippetRef.onmouseenter = refPeekOn;
-				snippetRef.onmouseleave = refPeekOff;
-				snippetRef.onclick = () => {
-					refPeekOff();
-					this.clearSelection();
-					referencedSnippet.selected = true;
-				}
-			}
-			
-			for (let button of document.querySelectorAll(".snippet-info table button")) {
-				let actions = {
-					"edit-name": snippet.rename,
-					"edit-track": snippet.changeTrack
-				};
-				if (button.className in actions) {
-					button.onclick = actions[button.className].bind(snippet);
-				}
-			}
-		}
-		this.addMasterButtonHandlers();
-	}
-	
 	renderMixer() {
 		return `
 			<svg>
@@ -184,48 +121,6 @@ class Program {
 		`;
 	}
 	
-	renderSnippetInfo() {
-		let tableContent;
-		let selectedSnippets = this.getSelectedSnippets();
-		if (selectedSnippets.length == 1) {
-			tableContent = selectedSnippets[0].renderInfoPanel();
-		} else {
-			tableContent = "";
-		}
-		return `
-			<div class="snippet-info">
-				${tableContent}
-				${this.renderMasterButtons()}
-			</div>
-		`;
-	}
-	
-	renderMasterButtons() {
-		let disabled = this.isCurrentlySelectedSnippetModified() ? "" : "disabled";
-		return `
-			<div class="master-buttons">
-				<button class="save" ${disabled}>save</button>
-				<button class="cancel "${disabled}>cancel</button>
-				<button class="delete">delete</button>
-			</div>
-		`;
-	}
-	
-	renderSelectionCount() {
-		let selectedSnippetsCount = this.getSelectedSnippets().length;
-		return `
-			<div class="selection-count"><div>
-				${selectedSnippetsCount}
-				${selectedSnippetsCount == 1 ? "snippet" : "snippets"} selected
-				${this.isCurrentlySelectedSnippetModified() ? " - <strong>modified</strong>" : ""}
-			</div></div>
-		`;
-	}
-	
-	renderInfoPanel() {
-		return this.renderSnippetInfo() + this.renderSelectionCount();
-	}
-	
 	updateMixer() {
 		this.mixerContainer.innerHTML = this.renderMixer();
 		this.tracks.forEach(track => track.addHandlers());
@@ -238,28 +133,10 @@ class Program {
 		[...this.tracks, ...this.snippets].forEach(item => item.addHandlers());
 	}
 	
-	updateSnippetInfo() {
-		document.querySelector(".snippet-info").outerHTML = this.renderSnippetInfo();
-	}
-	
-	updateMasterButtons() {
-		document.querySelector(".master-buttons").outerHTML = this.renderMasterButtons();
-		this.addMasterButtonHandlers();
-	}
-	
-	updateSelectionCount() {
-		document.querySelector(".selection-count").outerHTML = this.renderSelectionCount();
-	}
-	
-	updateInfoPanel() {
-		this.infoPanelContainer.innerHTML = this.renderInfoPanel();
-		this.addInfoPanelHandlers();
-	}
-	
 	updateAll() {
 		this.updateMixer();
 		this.updateWorkspace();
-		this.updateInfoPanel();
+		this.infoPanel.update();
 	}
 }
 
@@ -423,7 +300,7 @@ class Snippet {
 			}
 			this._selected = false;
 		}
-		this.containingProgram.updateInfoPanel();
+		this.containingProgram.infoPanel.update();
 	}
 	
 	set indirectlySelected(value) {
@@ -435,7 +312,13 @@ class Snippet {
 			this._indirectlySelected = false;
 		}
 	}
-		
+	
+	changeTrack(newTrack) {
+		let oldTrack = this.containingTrack;
+			this.containingTrack.removeSnippet(this);
+			newTrack.addSnippet(this);
+	}
+	
 	handleClick(event) {
 		// hold shift while clicking for selecting multiple snippets
 		if (!event.shiftKey) {
@@ -465,26 +348,6 @@ class Snippet {
 		}
 	}
 	
-	changeTrack() {
-		let trackInfo = document.querySelector(".snippet-info .info-track");
-		trackInfo.innerHTML = `
-			<select>
-				${this.containingProgram.tracks.map(track => `
-					<option value="${track.attrs.id}"
-							${track.attrs.id == this.containingTrack.attrs.id ? "selected" : ""}>
-						${track.attrs.name}
-					</option>
-				`).join("")}
-			</select>
-		`;
-		let editor = trackInfo.querySelector("select");
-		editor.onchange = () => {
-			trackInfo.dataset.modifiedValue = editor.value;
-			this.containingProgram.updateMasterButtons();
-			this.containingProgram.updateSelectionCount();
-		};
-	}
-	
 	rename() {
 		let newName = prompt("Please enter a new name for the snippet:", this.attrs.name);
 		if (newName !== null) {
@@ -493,57 +356,9 @@ class Snippet {
 		}
 	}
 	
-	saveModifications() {
-		for (let propInfo of document.querySelectorAll(".snippet-info [class^=info]")) {
-			if (propInfo.dataset.modifiedValue !== undefined &&
-				propInfo.dataset.modifiedValue != propInfo.dataset.originalValue) {
-					switch (propInfo.className) {
-						case "info-track":
-							this.containingTrack.removeSnippet(this);
-							let newTrack = this.containingProgram.getTrackById(propInfo.dataset.modifiedValue);
-							newTrack.addSnippet(this);
-							break;
-					}
-			}
-		}
-		this.containingProgram.updateAll();
-		this.containingProgram.clearSelection();
-	}
-	
 	addHandlers() {
 		this.container.querySelector("rect").onclick = this.handleClick.bind(this);
 		this.container.querySelector("text").onclick = this.rename.bind(this);
-	}
-	
-	getPropertyInfoText(prop) {
-		let propType = Object.keys(prop)[0];
-		switch (propType) {
-			case "ref":
-				let refName = this.containingProgram.getSnippetById(prop.ref.id).attrs.name;
-				let refText = `
-					<span class="snippet-ref" data-ref-id="${prop.ref.id}">
-						${refName ?? "unnamed snippet"}
-					</span>
-				`;
-				if ("prop" in prop.ref) {
-					let refProp = prop.ref.prop.replace(/^dur$/, "duration");
-					return `tied to ${refProp} of ${refText}`;
-				} else {
-					return `clone of ${refText}`;
-				}
-				break;
-			case "event":
-				let dict = { button_press: "button press", boot: "boot" };
-				return dict[prop.event] + " event";
-				break;
-			case "stream":
-				if (prop.stream == "input") {
-					return "live input";
-				}
-				break;
-			default:
-				return JSON.stringify(prop);
-		}
 	}
 	
 	getCSSClasses() {
@@ -567,45 +382,6 @@ class Snippet {
 				<circle class="recording-indicator"
 					cx="${this.x2 - 10}" cy="${this.y + 10}" r="5px"/>
 			</g>
-		`;
-	}
-	
-	renderInfoPanel() {
-		return `
-			<table data-snippet-id="${this.attrs.id}">
-				<tr>
-					<th>name</th>
-					<td>${this.attrs.name}</td>
-					<td><button class="edit-name">edit</button></td>
-				</tr>
-				<tr>
-					<th>track</th>
-					<td class="info-track" data-original-value="${this.containingTrack.attrs.id}">
-						${this.containingTrack.attrs.name}
-					</td>
-					<td><button class="edit-track">edit</button></td>
-				</tr>
-				<tr>
-					<th>source</th>
-					<td>${this.getPropertyInfoText(this.attrs.source)}</td>
-					<td><button class="edit-source">edit</button></td>
-				</tr>
-				<tr>
-					<th>start</th>
-					<td>${this.getPropertyInfoText(this.attrs.start)}</td>
-					<td><button class="edit-start">edit</button></td>
-				</tr>
-				<tr>
-					<th>end</th>
-					<td>${"end" in this.attrs ? this.getPropertyInfoText(this.attrs.end) : ""}</td>
-					<td><button class="edit-end">edit</button></td>
-				</tr>
-				<tr>
-					<th>duration</th>
-					<td>${"dur" in this.attrs ? this.getPropertyInfoText(this.attrs.dur) : ""}</td>
-					<td><button class="edit-dur">edit</button></td>
-				</tr>
-			</table>
 		`;
 	}
 }
