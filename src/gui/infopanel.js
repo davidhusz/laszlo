@@ -43,6 +43,14 @@ class InfoPanel {
 		return this.selectedSnippets.length == 1;
 	}
 	
+	hasStartedEditing() {
+		if (this.table !== null) {
+			return this.table.querySelectorAll(".started-editing").length > 0;
+		} else {
+			return false;
+		}
+	}
+	
 	isCurrentSnippetModified() {
 		if (this.table !== null) {
 			return Array.from(this.table.querySelectorAll(".info")).some(propInfo =>
@@ -54,27 +62,47 @@ class InfoPanel {
 	}
 	
 	editTrack() {
-		let trackInfo = this.table.querySelector(".track.info");
-		trackInfo.innerHTML = `
-			<select>
-				${this.containingProgram.tracks.map(track => `
-					<option value="${track.attrs.id}"
-							${track.attrs.id == this.currentTrack.attrs.id ? "selected" : ""}>
-						${track.attrs.name}
-					</option>
-				`).join("")}
-			</select>
-		`;
-		let editor = trackInfo.querySelector("select");
-		editor.onchange = () => {
-			if (editor.value !== trackInfo.dataset.originalValue) {
-				trackInfo.dataset.modifiedValue = editor.value;
-			} else {
-				delete trackInfo.dataset.modifiedValue;
-			}
+		this.editProperty(
+			"track",
+			originalValue =>
+				`
+					<select>
+						${this.containingProgram.tracks.map(track => `
+							<option value="${track.attrs.id}"
+									${track.attrs.id == originalValue ? "selected" : ""}>
+								${track.attrs.name}
+							</option>
+						`).join("")}
+					</select>
+				`
+		);
+	}
+	
+	editProperty(propName, editorCreator, inputHandler = null) {
+		let propInfo = this.table.querySelector(`.${propName}.info`);
+		if (!propInfo.classList.contains("started-editing")) {
+			let originalValue = propInfo.dataset.originalValue;
+			propInfo.innerHTML = editorCreator(originalValue);
+			propInfo.classList.add("started-editing");
 			this.updateMasterButtons();
-			this.updateSelectionCount();
-		};
+			let editor = propInfo.children[0];
+			if (editor.tagName == "INPUT") {
+				editor.select();
+			}
+			editor.oninput = () => {
+				if (editor.value !== originalValue) {
+					if (inputHandler !== null) {
+						propInfo.dataset.modifiedValue = inputHandler(editor);
+					} else {
+						propInfo.dataset.modifiedValue = editor.value;
+					}
+				} else {
+					delete propInfo.dataset.modifiedValue;
+				}
+				this.updateMasterButtons();
+				this.updateSelectionCount();
+			}
+		}
 	}
 	
 	saveModifications() {
@@ -237,7 +265,7 @@ class InfoPanel {
 		return `
 			<div class="master-buttons">
 				<button class="save" ${disabled}>save</button>
-				<button class="cancel" ${disabled}>cancel</button>
+				<button class="cancel" ${this.hasStartedEditing() ? "" : "disabled"}>cancel</button>
 				<button class="delete">delete</button>
 			</div>
 		`;
