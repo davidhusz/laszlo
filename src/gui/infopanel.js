@@ -89,14 +89,27 @@ class InfoPanel {
 		let _ = this.serializeForHTMLAttribute;
 		this.editProperty(
 			"source",
-			originalValue =>
-				`
-					<select>
-						<option value="${_({stream: "input"})}">live input</option>
-						<option value="clone">clone another snippet...</option>
-						<option value="file">from file...</option>
-					</select>
-				`,
+			originalValueAsJSON => {
+				let originalValue = JSON.parse(originalValueAsJSON);
+				let sourceType = Object.keys(originalValue)[0];
+				let editor = `<select><option value="${_({stream: "input"})}"`;
+				if (sourceType == "stream") {
+					editor += " selected";
+				}
+				editor += `
+					>live input</option>
+					<option value="clone">clone another snippet...</option>
+					<option value="file">from file...</option>
+				`;
+				if (sourceType != "stream") {
+					editor += `
+						<option value="${_(originalValue)}" selected>
+							${this.getPropertyInfoText(originalValue)}
+						</option>`;
+				}
+				editor += `</select>`;
+				return editor;
+			},
 			editor => {
 				if (editor.value == "clone") {
 					this.containingProgram.chooseSnippet(newSource => {
