@@ -61,6 +61,13 @@ class InfoPanel {
 		}
 	}
 	
+	editName() {
+		this.editProperty(
+			"name",
+			originalValue => `<input type="text" value="${originalValue}">`
+		);
+	}
+	
 	editTrack() {
 		this.editProperty(
 			"track",
@@ -142,6 +149,9 @@ class InfoPanel {
 			if (propInfo.modifiedValue !== undefined &&
 				propInfo.modifiedValue != propInfo.originalValue) {
 					switch (prop.classList[1]) {
+						case "name":
+							this.currentSnippet.changeName(propInfo.modifiedValue);
+							break;
 						case "track":
 							let newTrack = this.containingProgram.getTrackById(propInfo.modifiedValue);
 							this.currentSnippet.changeTrack(newTrack);
@@ -181,7 +191,7 @@ class InfoPanel {
 			let actions = {
 				// all instances of `(function(){})` are just placeholders for now which
 				// do nothing
-				name: (function(){}),
+				name: this.editName,
 				track: this.editTrack,
 				source: this.editSource,
 				start: (function(){}),
