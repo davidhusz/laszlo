@@ -78,6 +78,37 @@ class InfoPanel {
 		);
 	}
 	
+	editSource() {
+		let _ = this.serializeForHTMLAttribute;
+		this.editProperty(
+			"source",
+			originalValue =>
+				`
+					<select>
+						<option value="${_({stream: "input"})}">live input</option>
+						<option value="clone">clone another snippet...</option>
+						<option value="file">from file...</option>
+					</select>
+				`,
+			editor => {
+				if (editor.value == "clone") {
+					this.containingProgram.chooseSnippet(newSource => {
+						this.containingProgram.chooseSnippetModeOverlay.classList.remove("active");
+						let newValue = {
+							ref: { id: newSource.attrs.id }
+						};
+						let newOption = document.createElement("option");
+						newOption.setAttribute("value", _(newValue));
+						newOption.innerHTML = this.getPropertyInfoText(newValue);
+						editor.appendChild(newOption);
+						editor.value = _(newValue);
+						return JSON.stringify(newValue);
+					});
+				}
+			}
+		);
+	}
+	
 	editProperty(propName, editorCreator, inputHandler = null) {
 		let propInfo = this.table.querySelector(`.${propName}.info`);
 		if (!propInfo.classList.contains("started-editing")) {
@@ -152,7 +183,7 @@ class InfoPanel {
 				// do nothing
 				name: (function(){}),
 				track: this.editTrack,
-				source: (function(){}),
+				source: this.editSource,
 				start: (function(){}),
 				end: (function(){}),
 				dur: (function(){})

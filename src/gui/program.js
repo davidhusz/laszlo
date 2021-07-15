@@ -7,6 +7,8 @@ class Program {
 		[...this.tracks, ...this.snippets].forEach(item => {
 			item.containingProgram = this;
 		});
+		this.chooseSnippetMode = false;
+		this.chooseSnippetModeOverlay = document.querySelector("#choose-snippet-mode-overlay");
 		if ("mixerContainer" in options) {
 			this.mixerContainer = options.mixerContainer;
 			this.updateMixer();
@@ -56,6 +58,12 @@ class Program {
 	
 	clearSelection() {
 		this.snippets.forEach(snippet => snippet.selected = false);
+	}
+	
+	chooseSnippet(callback) {
+		this.chooseSnippetMode = true;
+		this.chooseSnippetModeCallback = callback;
+		this.chooseSnippetModeOverlay.classList.add("active");
 	}
 	
 	getBoundaryCoordinate(boundary) {
@@ -320,31 +328,36 @@ class Snippet {
 	}
 	
 	handleClick(event) {
-		// hold shift while clicking for selecting multiple snippets
-		if (!event.shiftKey) {
-			if (!this.selected) {
-				// if `this` is not yet directly selected, make it the only directly
-				// selected snippet
-				this.containingProgram.clearSelection();
-				this.selected = true;
-			} else {
-				// if `this` is the only directly selected snippet, clear selection,
-				// otherwise clear selection and then select `this`
-				if (this.containingProgram.getSelectedSnippets().length == 1) {
-					this.containingProgram.clearSelection();
-				} else {
+		if (!this.containingProgram.chooseSnippetMode) {
+			// hold shift while clicking for selecting multiple snippets
+			if (!event.shiftKey) {
+				if (!this.selected) {
+					// if `this` is not yet directly selected, make it the only directly
+					// selected snippet
 					this.containingProgram.clearSelection();
 					this.selected = true;
+				} else {
+					// if `this` is the only directly selected snippet, clear selection,
+					// otherwise clear selection and then select `this`
+					if (this.containingProgram.getSelectedSnippets().length == 1) {
+						this.containingProgram.clearSelection();
+					} else {
+						this.containingProgram.clearSelection();
+						this.selected = true;
+					}
+				}
+			} else {
+				if (!this.selected) {
+					// add `this` to directly selected snippets
+					this.selected = true;
+				} else {
+					// make `this` no longer directly selected
+					this.selected = false;
 				}
 			}
 		} else {
-			if (!this.selected) {
-				// add `this` to directly selected snippets
-				this.selected = true;
-			} else {
-				// make `this` no longer directly selected
-				this.selected = false;
-			}
+			this.containingProgram.chooseSnippetModeCallback(this);
+			this.containingProgram.chooseSnippetMode = false;
 		}
 	}
 	

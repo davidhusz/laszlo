@@ -1,6 +1,7 @@
 $dark-background: #242424
 // $light-background: #4f565e
 $light-background: #33383e
+$info-panel-height: 40%  // needed to adjust the overlay height
 
 @mixin center-within
 	height: 100%
@@ -28,7 +29,7 @@ body
 	display: grid
 	// TODO: select min values for all but the workspace
 	grid-template-columns: 17.5% auto
-	grid-template-rows: 5% auto 40%
+	grid-template-rows: 5% auto $info-panel-height
 	grid-template-areas: "main-menu main-menu" "mixer workspace" "info-panel info-panel"
 
 
@@ -139,3 +140,24 @@ body
 		@include center-within
 		font-size: x-large
 		opacity: 0.5
+
+
+#choose-snippet-mode-overlay
+	position: fixed
+	width: 100%
+	height: $info-panel-height
+	bottom: 0
+	left: 0
+	background-color: black
+	opacity: 0.8
+	display: none
+	&.active
+		display: block
+	div
+		position: relative
+		top: 50%
+		transform: translateY(-50%)
+		margin: 0
+		text-align: center
+		font-size: xx-large
+		color: white
