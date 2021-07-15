@@ -366,17 +366,8 @@ class Snippet {
 		}
 	}
 	
-	rename() {
-		let newName = prompt("Please enter a new name for the snippet:", this.attrs.name);
-		if (newName !== null) {
-			this.attrs.name = newName;
-			this.container.querySelector("text").innerHTML = this.attrs.name ?? "";
-		}
-	}
-	
 	addHandlers() {
-		this.container.querySelector("rect").onclick = this.handleClick.bind(this);
-		this.container.querySelector("text").onclick = this.rename.bind(this);
+		this.container.onclick = this.handleClick.bind(this);
 	}
 	
 	getCSSClasses() {
