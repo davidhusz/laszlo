@@ -166,12 +166,27 @@ class InfoPanel {
 		}
 	}
 	
+	serializeForHTMLAttribute(prop) {
+		let serialized;
+		if (typeof prop === "object") {
+			serialized = JSON.stringify(prop);
+		} else if (prop === undefined) {
+			serialized = "undefined";
+		} else {
+			serialized = prop;
+		}
+		// for some reason pywebview doesn't know the `replaceAll` string method, so
+		// instead we have to use `replace` with a regex
+		return serialized.replace(new RegExp('"', "g"), "&#34;");
+	}
+	
 	renderTable() {
+		let _ = this.serializeForHTMLAttribute;
 		return `
 			<table>
 				<tr>
 					<th>name</th>
-					<td class="info name" data-original-value="${this.currentSnippet.attrs.name}">
+					<td class="info name" data-original-value="${_(this.currentSnippet.attrs.name)}">
 						${this.currentSnippet.attrs.name}
 					</td>
 					<td><button class="edit name">edit</button></td>
@@ -185,14 +200,14 @@ class InfoPanel {
 				</tr>
 				<tr>
 					<th>source</th>
-					<td class="info source" data-original-value="${this.currentSnippet.attrs.source}">
+					<td class="info source" data-original-value="${_(this.currentSnippet.attrs.source)}">
 						${this.getPropertyInfoText(this.currentSnippet.attrs.source)}
 					</td>
 					<td><button class="edit source">edit</button></td>
 				</tr>
 				<tr>
 					<th>start</th>
-					<td class="info start" data-original-value="${this.currentSnippet.attrs.start}">
+					<td class="info start" data-original-value="${_(this.currentSnippet.attrs.start)}">
 						${this.getPropertyInfoText(this.currentSnippet.attrs.start)}
 					</td>
 					<td><button class="edit start">edit</button></td>
