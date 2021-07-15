@@ -179,6 +179,15 @@ class InfoPanel {
 	addMasterButtonHandlers() {
 		if (this.table !== null) {
 			this.masterButtons.querySelector(".save").onclick = this.saveModifications.bind(this);
+			this.masterButtons.querySelector(".cancel").onclick = () => {
+				this.table.querySelectorAll(".info").forEach(propInfo => {
+					// exit edit mode
+					propInfo.classList.remove("started-editing");
+					// discard all modifications
+					delete propInfo.dataset.modifiedValue;
+				});
+				this.update();
+			};
 		}
 	}
 	
@@ -229,9 +238,9 @@ class InfoPanel {
 				`;
 				if ("prop" in prop.ref) {
 					let refProp = prop.ref.prop.replace(/^dur$/, "duration");
-					return `tied to ${refProp} of ${refText}`;
+					return `${refProp} of ${refText}`;
 				} else {
-					return `clone of ${refText}`;
+					return `${refText}`;
 				}
 				break;
 			case "event":
