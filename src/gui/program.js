@@ -174,7 +174,7 @@ class Track {
 		this.attrs = attrs;
 		this.snippets = snippets;
 		this.height = 110;
-		this.padding = 2;
+		this.padding = 2.5;
 		this.snippets.forEach(snippet => {
 			snippet.containingTrack = this;
 		});
