@@ -287,7 +287,7 @@ class Snippet {
 	}
 	
 	get x() {
-		return this.containingProgram.getBoundaryCoordinate(this.attrs.start);
+		return this.containingProgram.getBoundaryCoordinate(this.attrs.start) ?? 10;
 	}
 	
 	get y() {
