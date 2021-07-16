@@ -122,13 +122,37 @@ class Program {
 		}
 	}
 	
-	addHandlers() {
+	addMixerHandlers() {
 		this.mixerContainer.onclick = event => {
 			if (event.target === this.mixerContainer.querySelector("svg")) {
-				let name = prompt("Please enter a name for the new track:", "Untitled track");
+				let name = prompt("Please enter a name for the new track:", "untitled track");
 				if (name !== null) {
 					this.addTrack(name);
 				}
+			}
+		};
+		// HACK: this function (in combination with the analogous one under
+		// addWorkspaceHandlers) is used to synchronize vertical scrolling between
+		// the mixer and the workspace. The usual event to use for this would be
+		// `onscroll` event; however, if we have an `onscroll` event for both the
+		// mixer and the workspace, they will effectively be always calling each
+		// other in a loop, making the scrolling veeery slow in certain browser
+		// engines like Gecko. As an alternative we can use the `onwheel` event,
+		// which however doesn't update as instantly or as regularly or something,
+		// which makes the synchronization lag sometimes. But we can use the
+		// `onscroll` event on just one of the two containers, so we use it on the
+		// more "important" one, the workspace.
+		this.mixerContainer.onwheel = event => {
+			if (this.mixerContainer.contains(event.target)) {
+				this.workspaceContainer.scrollTop = this.mixerContainer.scrollTop;
+			}
+		};
+	}
+	
+	addWorkspaceHandlers() {
+		this.workspaceContainer.onscroll = event => {
+			if (this.workspaceContainer.contains(event.target)) {
+				this.mixerContainer.scrollTop = this.workspaceContainer.scrollTop;
 			}
 		};
 	}
@@ -152,19 +176,22 @@ class Program {
 	updateMixer() {
 		this.mixerContainer.innerHTML = this.renderMixer();
 		this.tracks.forEach(track => track.addHandlers());
-		this.addHandlers();
+		this.addMixerHandlers();
 	}
 	
 	updateWorkspace() {
 		this.workspaceContainer.innerHTML = this.renderWorkspace();
 		this.snippets.forEach(snippet => snippet.setTransformOrigin());
 		[...this.tracks, ...this.snippets].forEach(item => item.addHandlers());
+		this.addWorkspaceHandlers();
 	}
 	
 	updateAll() {
 		this.updateMixer();
 		this.updateWorkspace();
 		this.infoPanel.update();
+		this.addMixerHandlers();
+		this.addWorkspaceHandlers();
 	}
 }
 

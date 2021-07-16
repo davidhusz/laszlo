@@ -2,6 +2,9 @@ $dark-background: #242424
 // $light-background: #4f565e
 $light-background: #33383e
 $info-panel-height: 40%  // needed to adjust the overlay height
+// $workspace-height is needed to sync the mixer height with it
+// 95% because otherwise we always get a scrollbar for some reason
+$workspace-height: max(95%, 2000px)
 
 @mixin center-within
 	height: 100%
@@ -13,6 +16,12 @@ $info-panel-height: 40%  // needed to adjust the overlay height
 
 @mixin slightly-bigger
 	transform: scale(1.05)
+
+@mixin style-scrollbar
+	&::-webkit-scrollbar
+		// TODO: style scrollbar properly
+		// https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar
+		display: none
 
 body
 	font-family: sans-serif
@@ -41,7 +50,9 @@ body
 	grid-area: mixer
 	svg
 		width: 100%
-		height: 100%
+		height: $workspace-height
+	overflow-y: scroll
+	@include style-scrollbar
 	margin-right: 5px
 	cursor: cell
 	
@@ -61,10 +72,10 @@ body
 	grid-area: workspace
 	background-color: $light-background
 	overflow: scroll
+	@include style-scrollbar
 	svg
 		width: max(100%, 3000px)
-		// 95% because otherwise we always get a scrollbar for some reason
-		height: max(95%, 2000px)
+		height: $workspace-height
 	
 	.track-separator
 		stroke: black
