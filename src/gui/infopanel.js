@@ -165,6 +165,9 @@ class InfoPanel {
 						case "name":
 							this.currentSnippet.changeName(propInfo.modifiedValue);
 							break;
+						case "source":
+							this.currentSnippet.changeSource(JSON.parse(propInfo.modifiedValue));
+							break;
 						case "track":
 							let newTrack = this.containingProgram.getTrackById(propInfo.modifiedValue);
 							this.currentSnippet.changeTrack(newTrack);

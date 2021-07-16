@@ -336,6 +336,11 @@ class Snippet {
 			newTrack.addSnippet(this);
 	}
 	
+	changeSource(newSource) {
+		this.attrs.source = newSource;
+		this.containingProgram.updateWorkspace();
+	}
+	
 	handleClick(event) {
 		if (!this.containingProgram.chooseSnippetMode) {
 			// hold shift while clicking for selecting multiple snippets
