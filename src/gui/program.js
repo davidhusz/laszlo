@@ -60,9 +60,10 @@ class Program {
 		this.snippets.forEach(snippet => snippet.selected = false);
 	}
 	
-	chooseSnippet(callback) {
+	chooseSnippet(msg, callback) {
 		this.chooseSnippetMode = true;
 		this.chooseSnippetModeCallback = callback;
+		this.chooseSnippetModeOverlay.firstChild.innerText = msg;
 		this.chooseSnippetModeOverlay.classList.add("active");
 	}
 	

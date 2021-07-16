@@ -108,9 +108,11 @@ class InfoPanel {
 				`;
 				return editor;
 			},
-			editor => {
-				if (editor.value == "clone") {
-					this.containingProgram.chooseSnippet(newSource => {
+			(editor, sourceInfo) => {
+				if (editor.value == JSON.stringify({stream: "input"})) {
+					sourceInfo.modifiedValue = editor.value;
+				} else if (editor.value == "clone") {
+					this.containingProgram.chooseSnippet("please click on the snippet you want to clone", newSource => {
 						this.containingProgram.chooseSnippetModeOverlay.classList.remove("active");
 						let newValue = {
 							ref: { id: newSource.attrs.id }
