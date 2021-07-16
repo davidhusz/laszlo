@@ -403,7 +403,6 @@ class Snippet {
 	
 	changeName(newName) {
 		this.attrs.name = newName;
-		this.containingProgram.updateWorkspace();
 	}
 	
 	changeTrack(newTrack) {
@@ -414,12 +413,10 @@ class Snippet {
 	
 	changeSource(newSource) {
 		this.attrs.source = newSource;
-		this.containingProgram.updateWorkspace();
 	}
 	
 	changeStart(newStart) {
 		this.attrs.start = newStart;
-		this.containingProgram.updateWorkspace();
 	}
 	
 	changeDur(newDur) {
@@ -431,7 +428,6 @@ class Snippet {
 			case "event":
 				this.attrs.end = newDur;
 		}
-		this.containingProgram.updateWorkspace();
 	}
 	
 	handleClick(event) {
