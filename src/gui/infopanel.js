@@ -122,7 +122,10 @@ class InfoPanel {
 						newOption.innerHTML = this.getPropertyInfoText(newValue);
 						editor.appendChild(newOption);
 						editor.value = _(newValue);
-						return JSON.stringify(newValue);
+						sourceInfo.modifiedValue = JSON.stringify(newValue);
+						// since this a delayed callback, we have to render again
+						this.updateMasterButtons();
+						this.updateSelectionCount();
 					});
 				}
 			}
@@ -143,7 +146,7 @@ class InfoPanel {
 			editor.oninput = () => {
 				if (editor.value !== originalValue) {
 					if (inputHandler !== null) {
-						propInfo.dataset.modifiedValue = inputHandler(editor);
+						inputHandler(editor, propInfo.dataset);
 					} else {
 						propInfo.dataset.modifiedValue = editor.value;
 					}
