@@ -342,6 +342,11 @@ class Snippet {
 		this.containingProgram.updateWorkspace();
 	}
 	
+	changeStart(newStart) {
+		this.attrs.start = newStart;
+		this.containingProgram.updateWorkspace();
+	}
+	
 	handleClick(event) {
 		if (!this.containingProgram.chooseSnippetMode) {
 			// hold shift while clicking for selecting multiple snippets

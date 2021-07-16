@@ -141,6 +141,80 @@ class InfoPanel {
 		);
 	}
 	
+	editStart() {
+		let _ = this.serializeForHTMLAttribute;
+		this.editProperty(
+			"start",
+			originalValueAsJSON => {
+				let originalValue = JSON.parse(originalValueAsJSON);
+				let editor = `<select>`;
+				if ("ref" in originalValue) {
+					editor += `
+						<option value="${_(originalValueAsJSON)}" selected>
+							${this.getPropertyInfoText(originalValue)}
+						</option>
+					`;
+				}
+				let events = [{ event: "boot" }, { event: "button_press" }];
+				for (let event of events) {
+					editor += `
+						<option value="${_(event)}" ${event == originalValue ? "selected" : ""}>
+							${event.event.replace("_", " ")} event
+						</option>
+					`;
+				}
+				editor += `
+						<option value="ref-start">start of another snippet...</option>
+						<option value="ref-end">end of another snippet...</option>
+					</select>
+				`;
+				return editor;
+			},
+			(editor, startInfo) => {
+				if (editor.value == "ref-start" || editor.value == "ref-end") {
+					this.containingProgram.chooseSnippet("please click on the snippet you want to derive this snippet's start from", newStart => {
+						this.containingProgram.chooseSnippetModeOverlay.classList.remove("active");
+						
+						let followRefs = ref => {
+							// Make sure we're not getting stuck in an infinite loop
+							if (Object.keys(ref.attrs.start)[0] == "ref") {
+								let refId = ref.attrs.start.ref.id;
+								if (refId == this.currentSnippet.attrs.id) {
+									this.showModificationError(
+										"your selection results in an infinite loop (two or " +
+										"more snippets have their start events pointing at each other)"
+									);
+									return;
+								} else {
+									followRefs(this.containingProgram.getSnippetById(refId));
+								}
+							}
+						}
+						followRefs(newStart);
+						
+						let newValue = {
+							ref: {
+								id: newStart.attrs.id,
+								prop: editor.value.replace("ref-", "")
+							}
+						};
+						let newOption = document.createElement("option");
+						newOption.setAttribute("value", _(newValue));
+						newOption.innerHTML = this.getPropertyInfoText(newValue);
+						editor.appendChild(newOption);
+						editor.value = _(newValue);
+						startInfo.modifiedValue = JSON.stringify(newValue);
+						// since this a delayed callback, we have to render again
+						this.updateMasterButtons();
+						this.updateSelectionCount();
+					});
+				} else if (Object.keys(JSON.parse(editor.value))[0] == "event") {
+					startInfo.modifiedValue = editor.value;
+				}
+			}
+		);
+	}
+	
 	editProperty(propName, editorCreator, inputHandler = null) {
 		let propInfo = this.table.querySelector(`.${propName}.info`);
 		if (!propInfo.classList.contains("started-editing")) {
@@ -184,6 +258,9 @@ class InfoPanel {
 							break;
 						case "source":
 							this.currentSnippet.changeSource(JSON.parse(propInfo.modifiedValue));
+							break;
+						case "start":
+							this.currentSnippet.changeStart(JSON.parse(propInfo.modifiedValue));
 							break;
 						case "track":
 							let newTrack = this.containingProgram.getTrackById(propInfo.modifiedValue);
@@ -259,9 +336,9 @@ class InfoPanel {
 				name: this.editName,
 				track: this.editTrack,
 				source: this.editSource,
-				start: (function(){}),
 				end: (function(){}),
 				dur: (function(){})
+				start: this.editStart,
 			};
 			for (let button of this.table.querySelectorAll(".edit")) {
 				button.onclick = actions[button.classList[1]].bind(this);
