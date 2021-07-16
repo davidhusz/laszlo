@@ -417,11 +417,21 @@ class InfoPanel {
 		let question;
 		let snippetCount = this.selectedSnippets.length;
 		if (snippetCount == 1) {
-			question = `Delete snippet "${this.currentSnippet.attrs.name}"?`;
+			if (this.currentSnippet.attrs.name != undefined) {
+				question = `Delete snippet '${this.currentSnippet.attrs.name}'`;
+			} else {
+				question = `Delete this snippet`;
+			}
 		} else {
-			question = `Delete ${snippetCount} snippets?`;
+			question = `Delete ${snippetCount} snippets`;
 		}
-		if (confirm(question)) {
+		if (this.selectedSnippets.some(snippet => snippet.recording)) {
+			let cloneCount = clones.length;
+			question += ` and ${cloneCount} ${cloneCount == 1 ? "clone" : "clones"}`;
+		}
+		
+		if (confirm(question+"?")) {
+			clones.forEach(clone => clone.remove());
 			this.selectedSnippets.forEach(snippet => snippet.remove());
 			this.containingProgram.updateAll();
 			this.containingProgram.clearSelection();
