@@ -101,22 +101,6 @@ class Program {
 		}
 	}
 	
-	determineSnippetRelatives() {
-		for (let snippet of this.snippets) {
-			let sourceType = Object.keys(snippet.attrs.source)[0];
-			switch (sourceType) {
-				case "stream":
-					break;
-				case "ref":
-					let referencedSnippet = this.getSnippetById(snippet.attrs.source.ref.id);
-					referencedSnippet.recording = true;
-					referencedSnippet.clones.push(snippet);
-					snippet.isClone = true;
-					snippet.source = referencedSnippet;
-			}
-		}
-	}
-	
 	renderMixer() {
 		return `
 			<svg>
@@ -139,7 +123,6 @@ class Program {
 	}
 	
 	updateWorkspace() {
-		this.determineSnippetRelatives();
 		this.workspaceContainer.innerHTML = this.renderWorkspace();
 		this.snippets.forEach(snippet => snippet.setTransformOrigin());
 		[...this.tracks, ...this.snippets].forEach(item => item.addHandlers());
@@ -230,9 +213,6 @@ class Snippet {
 		this.attrs = attrs;
 		this.width = 200;
 		this.height = 100;
-		this.recording = false;
-		this.clones = [];
-		this.isClone = false;
 		this._selected = false;
 		this._indirectlySelected = false;
 	}
@@ -270,11 +250,28 @@ class Snippet {
 		return this.y + (this.height / 2);
 	}
 	
+	get recording() {
+		return this.clones.length > 0;
+	}
+	
+	get clones() {
+		return this.containingProgram.snippets.filter(snippet =>
+			"ref" in snippet.attrs.source &&
+			snippet.attrs.source.ref.id == this.attrs.id
+		);
+	}
+	
+	get isClone() {
+		let sourceType = Object.keys(this.attrs.source)[0];
+		return sourceType == "ref";
+	}
+	
 	get relatives() {
 		let relatives = this.clones;
 		if (this.isClone) {
-			relatives.push(this.source);
-			this.source.clones.forEach(clone => {
+			let source = this.containingProgram.getSnippetById(this.attrs.source.ref.id);
+			relatives.push(source);
+			source.clones.forEach(clone => {
 				if (clone !== this) {
 					relatives.push(clone);
 				}
