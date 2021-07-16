@@ -381,6 +381,7 @@ class InfoPanel {
 		this.saveModifications();
 		this._newSnippet.selected = true;
 		this._newSnippet = null;
+		this.updateSelectionCount();
 	}
 	
 	cancelModifications() {
