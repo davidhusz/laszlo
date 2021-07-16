@@ -68,7 +68,7 @@ class Program {
 		if (target == "track") {
 			items = this.tracks;
 		} else if (target == "snippet") {
-			items = this.tracks;
+			items = this.snippets;
 		}
 		let ids = items.map(item => item.attrs.id);
 		let newId = Math.max(...ids.map(id => parseInt(id.substr(1)))) + 1;
