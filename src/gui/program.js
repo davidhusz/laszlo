@@ -321,6 +321,10 @@ class Snippet {
 		}
 	}
 	
+	remove() {
+		this.containingTrack.removeSnippet(this);
+	}
+	
 	changeName(newName) {
 		this.attrs.name = newName;
 		this.containingProgram.updateWorkspace();

@@ -176,18 +176,41 @@ class InfoPanel {
 		this.containingProgram.clearSelection();
 	}
 	
+	cancelModifications() {
+		this.table.querySelectorAll(".info").forEach(propInfo => {
+			// exit edit mode
+			propInfo.classList.remove("started-editing");
+			// discard all modifications
+			delete propInfo.dataset.modifiedValue;
+		});
+		this.update();
+	}
+	
+	deleteSelectedSnippets() {
+		let question;
+		let snippetCount = this.selectedSnippets.length;
+		if (snippetCount == 1) {
+			question = `Delete snippet "${this.currentSnippet.attrs.name}"?`;
+		} else {
+			question = `Delete ${snippetCount} snippets?`;
+		}
+		if (confirm(question)) {
+			this.selectedSnippets.forEach(snippet => snippet.remove());
+			this.containingProgram.updateAll();
+			this.containingProgram.clearSelection();
+		}
+	}
+		
 	addMasterButtonHandlers() {
 		if (this.table !== null) {
-			this.masterButtons.querySelector(".save").onclick = this.saveModifications.bind(this);
-			this.masterButtons.querySelector(".cancel").onclick = () => {
-				this.table.querySelectorAll(".info").forEach(propInfo => {
-					// exit edit mode
-					propInfo.classList.remove("started-editing");
-					// discard all modifications
-					delete propInfo.dataset.modifiedValue;
-				});
-				this.update();
-			};
+			this.masterButtons.querySelector(".save").onclick =
+				this.saveModifications.bind(this);
+			this.masterButtons.querySelector(".cancel").onclick =
+				this.cancelModifications.bind(this);
+		}
+		if (this.selectedSnippets.length > 0) {
+			this.masterButtons.querySelector(".delete").onclick =
+				this.deleteSelectedSnippets.bind(this);
 		}
 	}
 	
@@ -324,12 +347,18 @@ class InfoPanel {
 	}
 	
 	renderMasterButtons() {
-		let disabled = this.isCurrentSnippetModified() ? "" : "disabled";
+		let enabledIf = condition => condition ? "" : "disabled";
 		return `
 			<div class="master-buttons">
-				<button class="save" ${disabled}>save</button>
-				<button class="cancel" ${this.hasStartedEditing() ? "" : "disabled"}>cancel</button>
-				<button class="delete">delete</button>
+				<button class="save" ${enabledIf(this.isCurrentSnippetModified())}>
+					save
+				</button>
+				<button class="cancel" ${enabledIf(this.hasStartedEditing())}>
+					cancel
+				</button>
+				<button class="delete" ${enabledIf(this.selectedSnippets.length > 0)}>
+					delete
+				</button>
 			</div>
 		`;
 	}
@@ -368,6 +397,7 @@ class InfoPanel {
 	
 	update() {
 		this.container.innerHTML = this.render();
+		this.addMasterButtonHandlers();
 		this.addHandlers();
 	}
 }
