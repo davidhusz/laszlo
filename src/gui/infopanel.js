@@ -114,6 +114,15 @@ class InfoPanel {
 				} else if (editor.value == "clone") {
 					this.containingProgram.chooseSnippet("please click on the snippet you want to clone", newSource => {
 						this.containingProgram.chooseSnippetModeOverlay.classList.remove("active");
+						
+						if (newSource.attrs.id == this.currentSnippet.attrs.id) {
+							this.showModificationError("a snippet cannot be a clone of itself");
+							return;
+						} else if (newSource.x2 > this.currentSnippet.x) {
+							this.showModificationError("a cloned snippet must come after the snippet that it is a clone of");
+							return;
+						}
+						
 						let newValue = {
 							ref: { id: newSource.attrs.id }
 						};
@@ -157,6 +166,11 @@ class InfoPanel {
 				this.updateSelectionCount();
 			}
 		}
+	}
+	
+	showModificationError(msg) {
+		alert(`Error: ${msg}. Please try again`);
+		this.cancelModifications();
 	}
 	
 	saveModifications() {
