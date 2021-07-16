@@ -63,6 +63,27 @@ class Program {
 		});
 	}
 	
+	generateNewId(target) {
+		let items;
+		if (target == "track") {
+			items = this.tracks;
+		} else if (target == "snippet") {
+			items = this.tracks;
+		}
+		let ids = items.map(item => item.attrs.id);
+		let newId = Math.max(...ids.map(id => parseInt(id.substr(1)))) + 1;
+		return `t${newId}`;
+	}
+	
+	addTrack(name) {
+		let id = this.generateNewId("track");
+		let track = new Track({ name: name, id: id }, []);
+		this.tracks.push(track);
+		track.containingProgram = this;
+		this.updateMixer();
+		this.updateWorkspace();
+	}
+	
 	chooseSnippet(msg, callback) {
 		this.chooseSnippetMode = true;
 		this.chooseSnippetModeCallback = callback;
@@ -101,6 +122,17 @@ class Program {
 		}
 	}
 	
+	addHandlers() {
+		this.mixerContainer.onclick = event => {
+			if (event.target === this.mixerContainer.querySelector("svg")) {
+				let name = prompt("Please enter a name for the new track:", "Untitled track");
+				if (name !== null) {
+					this.addTrack(name);
+				}
+			}
+		};
+	}
+	
 	renderMixer() {
 		return `
 			<svg>
@@ -120,6 +152,7 @@ class Program {
 	updateMixer() {
 		this.mixerContainer.innerHTML = this.renderMixer();
 		this.tracks.forEach(track => track.addHandlers());
+		this.addHandlers();
 	}
 	
 	updateWorkspace() {
