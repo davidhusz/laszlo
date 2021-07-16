@@ -92,22 +92,20 @@ class InfoPanel {
 			originalValueAsJSON => {
 				let originalValue = JSON.parse(originalValueAsJSON);
 				let sourceType = Object.keys(originalValue)[0];
-				let editor = `<select><option value="${_({stream: "input"})}"`;
-				if (sourceType == "stream") {
-					editor += " selected";
-				}
-				editor += `
-					>live input</option>
-					<option value="clone">clone another snippet...</option>
-					<option value="file">from file...</option>
-				`;
-				if (sourceType != "stream") {
+				let editor = `<select>`;
+				if (sourceType == "ref") {
 					editor += `
 						<option value="${_(originalValue)}" selected>
 							${this.getPropertyInfoText(originalValue)}
 						</option>`;
 				}
-				editor += `</select>`;
+				editor += `
+						<option value="${_({stream: "input"})}"
+							${sourceType == "stream" ? "selected" : ""}>live input</option>
+						<option value="clone">clone another snippet...</option>
+						<option value="file">from file...</option>
+					</select>
+				`;
 				return editor;
 			},
 			editor => {
