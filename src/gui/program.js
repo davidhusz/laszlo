@@ -430,6 +430,7 @@ class Snippet {
 				break;
 			case "event":
 				this.attrs.end = newDur;
+				delete this.attrs.dur;
 		}
 	}
 	
