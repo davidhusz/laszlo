@@ -64,15 +64,17 @@ class Program {
 	}
 	
 	generateNewId(target) {
-		let items;
+		let items, prefix;
 		if (target == "track") {
 			items = this.tracks;
+			prefix = "t";
 		} else if (target == "snippet") {
 			items = this.snippets;
+			prefix = "s";
 		}
 		let ids = items.map(item => item.attrs.id);
 		let newId = Math.max(...ids.map(id => parseInt(id.substr(1)))) + 1;
-		return `t${newId}`;
+		return prefix + newId;
 	}
 	
 	addTrack(name) {
