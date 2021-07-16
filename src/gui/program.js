@@ -221,7 +221,7 @@ class Track {
 		return `
 			<g class="track-mixer" id="${this.attrs.id}">
 				<rect x="0" y="${this.y + this.padding}px" width="100%"
-					height="${this.height - (2 * this.padding)}px"/>
+					height="${this.height - (2 * this.padding)}px" rx="5px"/>
 				<text x="10px" y="${this.y + this.padding + 10}px">
 					${this.attrs.name}
 				</text>
@@ -459,7 +459,7 @@ class Snippet {
 		return `
 			<g class="${this.getCSSClasses()}" id="${this.attrs.id}">
 				<rect x="${this.x}px" y="${this.y}px"
-					width="${this.width}px" height="${this.height}px"/>
+					width="${this.width}px" height="${this.height}px" rx="5px"/>
 				<text x="${this.x + 10}px" y="${this.y2 - 10}px">
 					${this.attrs.name ?? ""}
 				</text>
