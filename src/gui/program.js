@@ -57,7 +57,10 @@ class Program {
 	}
 	
 	clearSelection() {
-		this.snippets.forEach(snippet => snippet.selected = false);
+		this.snippets.forEach(snippet => {
+			snippet.selected = false;
+			snippet.indirectlySelected = false;
+		});
 	}
 	
 	chooseSnippet(msg, callback) {
