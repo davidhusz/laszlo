@@ -93,8 +93,25 @@ class InfoPanel {
 								${track.attrs.name}
 							</option>
 						`).join("")}
+						<option value="new">new track...</option>
 					</select>
-				`
+				`,
+				(editor, trackInfo) => {
+					if (editor.value != "new") {
+						trackInfo.modifiedValue = editor.value;
+					} else {
+						this.containingProgram.promptForNewTrack();
+						let allTracks = this.containingProgram.tracks;
+						let newTrack = allTracks[allTracks.length-1];
+						let newValue = newTrack.attrs.id;
+						let newOption = document.createElement("option");
+						newOption.setAttribute("value", newValue)
+						newOption.innerHTML = newTrack.attrs.name;
+						editor.appendChild(newOption);
+						editor.value = newValue;
+						trackInfo.modifiedValue = newValue;
+					}
+				}
 		);
 	}
 	

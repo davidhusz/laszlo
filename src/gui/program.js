@@ -86,6 +86,13 @@ class Program {
 		this.updateWorkspace();
 	}
 	
+	promptForNewTrack() {
+		let name = prompt("Please enter a name for the new track:", "untitled track");
+		if (name !== null) {
+			this.addTrack(name);
+		}
+	}
+	
 	chooseSnippet(msg, callback) {
 		this.chooseSnippetMode = true;
 		this.chooseSnippetModeCallback = callback;
@@ -127,10 +134,7 @@ class Program {
 	addMixerHandlers() {
 		this.mixerContainer.onclick = event => {
 			if (event.target === this.mixerContainer.querySelector("svg")) {
-				let name = prompt("Please enter a name for the new track:", "untitled track");
-				if (name !== null) {
-					this.addTrack(name);
-				}
+				this.promptForNewTrack();
 			}
 		};
 		// HACK: this function (in combination with the analogous one under
