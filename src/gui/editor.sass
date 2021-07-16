@@ -14,6 +14,17 @@ $workspace-height: max(95%, 2000px)
 		top: 50%
 		transform: translateY(-50%)
 
+@mixin center-text-within
+	div
+		position: relative
+		top: 50%
+		transform: translateY(-50%)
+		margin: auto
+		max-width: 50%
+		text-align: center
+		font-size: xx-large
+		color: white
+
 @mixin slightly-bigger
 	transform: scale(1.05)
 
@@ -125,6 +136,7 @@ body
 	.snippet-info
 		grid-area: snippet-info
 		@include center-within
+		width: 100%
 		display: grid
 		grid-template-rows: auto 10%
 		grid-template-areas: "info-table" "master-buttons"
@@ -132,7 +144,10 @@ body
 		// padding: 10px
 		table
 			grid-area: info-table
+			width: max-content
 			height: min-content
+			margin-left: auto
+			margin-right: auto
 			th, td
 				padding: 2px 10px
 			th
@@ -153,6 +168,11 @@ body
 		@include center-within
 		font-size: x-large
 		opacity: 0.5
+	
+	.add-snippet-area
+		@include center-text-within
+		opacity: 0.5
+		cursor: cell
 
 
 #choose-snippet-mode-overlay
@@ -164,13 +184,6 @@ body
 	background-color: black
 	opacity: 0.8
 	display: none
+	@include center-text-within
 	&.active
 		display: block
-	div
-		position: relative
-		top: 50%
-		transform: translateY(-50%)
-		margin: 0
-		text-align: center
-		font-size: xx-large
-		color: white

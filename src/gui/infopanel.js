@@ -3,6 +3,7 @@
 class InfoPanel {
 	constructor(container) {
 		this.container = container;
+		this._newSnippet = null;
 	}
 	
 	get table() {
@@ -11,6 +12,10 @@ class InfoPanel {
 	
 	get masterButtons() {
 		return this.container.querySelector(".master-buttons");
+	}
+	
+	get addSnippetArea() {
+		return this.container.querySelector(".add-snippet-area");
 	}
 	
 	get snippetInfo() {
@@ -26,12 +31,16 @@ class InfoPanel {
 	}
 	
 	get currentSnippet() {
-		if (this.selectedSnippets.length == 1) {
-			return this.selectedSnippets[0];
-		} else if (this.selectedSnippets.length == 0) {
-			console.error("No snippet selected");
+		if (!this.isAddingNewSnippet()) {
+			if (this.selectedSnippets.length == 1) {
+				return this.selectedSnippets[0];
+			} else if (this.selectedSnippets.length == 0) {
+				console.error("No snippet selected");
+			} else {
+				console.error("More than one snippet selected");
+			}
 		} else {
-			console.error("More than one snippet selected");
+			return this._newSnippet;
 		}
 	}
 	
@@ -40,7 +49,7 @@ class InfoPanel {
 	}
 	
 	hasOneSnippet() {
-		return this.selectedSnippets.length == 1;
+		return this.selectedSnippets.length == 1 || this.isAddingNewSnippet();
 	}
 	
 	hasStartedEditing() {
@@ -61,10 +70,14 @@ class InfoPanel {
 		}
 	}
 	
+	isAddingNewSnippet() {
+		return this._newSnippet !== null;
+	}
+	
 	editName() {
 		this.editProperty(
 			"name",
-			originalValue => `<input type="text" value="${originalValue}">`
+			originalValue => `<input type="text" value="${originalValue ?? "unnamed snippet"}">`
 		);
 	}
 	
@@ -90,8 +103,14 @@ class InfoPanel {
 		this.editProperty(
 			"source",
 			originalValueAsJSON => {
-				let originalValue = JSON.parse(originalValueAsJSON);
-				let sourceType = Object.keys(originalValue)[0];
+				let originalValue, sourceType;
+				if (originalValueAsJSON !== undefined) {
+					originalValue = JSON.parse(originalValueAsJSON);
+					sourceType = Object.keys(originalValue)[0];
+				} else {
+					originalValue = undefined;
+					sourceType = undefined;
+				}
 				let editor = `<select>`;
 				if (sourceType == "ref") {
 					editor += `
@@ -146,9 +165,16 @@ class InfoPanel {
 		this.editProperty(
 			"start",
 			originalValueAsJSON => {
-				let originalValue = JSON.parse(originalValueAsJSON);
+				let originalValue, startType;
+				if (originalValueAsJSON !== undefined) {
+					originalValue = JSON.parse(originalValueAsJSON);
+					startType = Object.keys(originalValue)[0];
+				} else {
+					originalValue = undefined;
+					startType = undefined;
+				}
 				let editor = `<select>`;
-				if ("ref" in originalValue) {
+				if (startType == "ref") {
 					editor += `
 						<option value="${_(originalValueAsJSON)}" selected>
 							${this.getPropertyInfoText(originalValue)}
@@ -220,9 +246,16 @@ class InfoPanel {
 		this.editProperty(
 			"dur",
 			originalValueAsJSON => {
-				let originalValue = JSON.parse(originalValueAsJSON);
+				let originalValue, durType;
+				if (originalValueAsJSON !== undefined) {
+					originalValue = JSON.parse(originalValueAsJSON);
+					durType = Object.keys(originalValue)[0];
+				} else {
+					originalValue = undefined;
+					durType = undefined;
+				}
 				let editor = `<select>;`
-				if ("ref" in originalValue) {
+				if (durType == "ref") {
 					editor += `
 						<option value="${_(originalValueAsJSON)}" selected>
 							${this.getPropertyInfoText(originalValue)}
@@ -281,13 +314,19 @@ class InfoPanel {
 		let propInfo = this.table.querySelector(`.${propName}.info`);
 		if (!propInfo.classList.contains("started-editing")) {
 			let originalValue = propInfo.dataset.originalValue;
+			if (originalValue == "undefined") {
+				originalValue = undefined;
+			}
 			propInfo.innerHTML = editorCreator(originalValue);
 			propInfo.classList.add("started-editing");
-			this.updateMasterButtons();
 			let editor = propInfo.children[0];
 			if (editor.tagName == "INPUT") {
 				editor.select();
 			}
+			if (originalValue == undefined) {
+				propInfo.dataset.modifiedValue = editor.value;
+			}
+			this.updateMasterButtons();
 			editor.oninput = () => {
 				if (editor.value !== originalValue) {
 					if (inputHandler !== null) {
@@ -338,6 +377,12 @@ class InfoPanel {
 		this.containingProgram.clearSelection();
 	}
 	
+	saveNewSnippet() {
+		this.saveModifications();
+		this._newSnippet.selected = true;
+		this._newSnippet = null;
+	}
+	
 	cancelModifications() {
 		this.table.querySelectorAll(".info").forEach(propInfo => {
 			// exit edit mode
@@ -345,6 +390,8 @@ class InfoPanel {
 			// discard all modifications
 			delete propInfo.dataset.modifiedValue;
 		});
+		// remove newly added snippet if present
+		this._newSnippet = null;
 		this.update();
 	}
 	
@@ -365,8 +412,13 @@ class InfoPanel {
 		
 	addMasterButtonHandlers() {
 		if (this.table !== null) {
-			this.masterButtons.querySelector(".save").onclick =
-				this.saveModifications.bind(this);
+			this.masterButtons.querySelector(".save").onclick = () => {
+				if (!this.isAddingNewSnippet()) {
+					this.saveModifications();
+				} else {
+					this.saveNewSnippet();
+				}
+			};
 			this.masterButtons.querySelector(".cancel").onclick =
 				this.cancelModifications.bind(this);
 		}
@@ -406,9 +458,32 @@ class InfoPanel {
 				button.onclick = actions[button.classList[1]].bind(this);
 			}
 		}
+		
+		if (this.addSnippetArea !== null) {
+			this.addSnippetArea.onclick = event => {
+				let snippet = new Snippet({
+					id: this.containingProgram.generateNewId("snippet"),
+					source: undefined,
+					start: undefined,
+					dur: undefined
+				});
+				snippet.containingProgram = this.containingProgram;
+				snippet.containingTrack = undefined;
+				this._newSnippet = snippet;
+				this.update();
+				this.editName();
+				this.editTrack();
+				this.editSource();
+				this.editStart();
+				this.editDur();
+			};
+		}
 	}
 	
 	getPropertyInfoText(prop) {
+		if (prop === undefined) {
+			return prop;
+		}
 		let propType = Object.keys(prop)[0];
 		switch (propType) {
 			case "ref":
@@ -468,8 +543,8 @@ class InfoPanel {
 				</tr>
 				<tr>
 					<th>track</th>
-					<td class="info track" data-original-value="${this.currentTrack.attrs.id}">
-						${this.currentTrack.attrs.name}
+					<td class="info track" data-original-value="${_(this.currentTrack ? this.currentTrack.attrs.id : undefined)}">
+						${this.currentTrack ? this.currentTrack.attrs.name : undefined}
 					</td>
 					<td><button class="edit track">edit</button></td>
 				</tr>
@@ -502,7 +577,7 @@ class InfoPanel {
 		let enabledIf = condition => condition ? "" : "disabled";
 		return `
 			<div class="master-buttons">
-				<button class="save" ${enabledIf(this.isCurrentSnippetModified())}>
+				<button class="save" ${enabledIf(this.isCurrentSnippetModified() || this.isAddingNewSnippet())}>
 					save
 				</button>
 				<button class="cancel" ${enabledIf(this.hasStartedEditing())}>
@@ -515,10 +590,18 @@ class InfoPanel {
 		`;
 	}
 	
+	renderAddSnippetArea() {
+		return `
+			<div class="add-snippet-area"><div>
+				click here to add a new snippet
+			</div></div>
+		`;
+	}
+	
 	renderSnippetInfo() {
 		return `
 			<div class="snippet-info">
-				${this.hasOneSnippet() ? this.renderTable() : ""}
+				${this.hasOneSnippet() ? this.renderTable() : this.renderAddSnippetArea()}
 				${this.renderMasterButtons()}
 			</div>
 		`;
@@ -527,9 +610,13 @@ class InfoPanel {
 	renderSelectionCount() {
 		return `
 			<div class="selection-count"><div>
-				${this.selectedSnippets.length}
-				${this.selectedSnippets.length == 1 ? "snippet" : "snippets"} selected
-				${this.isCurrentSnippetModified() ? " - <strong>modified</strong>" : ""}
+				${!this.isAddingNewSnippet() ? `
+					${this.selectedSnippets.length}
+					${this.selectedSnippets.length == 1 ? "snippet" : "snippets"} selected
+					${this.isCurrentSnippetModified() ? " - <strong>modified</strong>" : ""}
+				` : `
+					adding new snippet
+				`}
 			</div></div>
 		`;
 	}

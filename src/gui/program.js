@@ -406,9 +406,10 @@ class Snippet {
 	}
 	
 	changeTrack(newTrack) {
-		let oldTrack = this.containingTrack;
+		if (this.containingTrack != undefined) {
 			this.containingTrack.removeSnippet(this);
-			newTrack.addSnippet(this);
+		}
+		newTrack.addSnippet(this);
 	}
 	
 	changeSource(newSource) {
