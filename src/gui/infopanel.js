@@ -215,6 +215,68 @@ class InfoPanel {
 		);
 	}
 	
+	editDur() {
+		let _ = this.serializeForHTMLAttribute;
+		this.editProperty(
+			"dur",
+			originalValueAsJSON => {
+				let originalValue = JSON.parse(originalValueAsJSON);
+				let editor = `<select>;`
+				if ("ref" in originalValue) {
+					editor += `
+						<option value="${_(originalValueAsJSON)}" selected>
+							${this.getPropertyInfoText(originalValue)}
+						</option>
+					`;
+				}
+				let events = [{ event: "button_press" }];
+				for (let event of events) {
+					editor += `
+						<option value="${_(event)}" ${event == originalValue ? "selected" : ""}>
+							until next ${event.event.replace("_", " ")} event
+						</option>
+					`;
+				}
+				editor += `
+						<option value="ref-dur">duration of another snippet...</option>
+					</select>
+				`;
+				return editor;
+			},
+			(editor, durInfo) => {
+				if (editor.value == "ref-dur") {
+					this.containingProgram.chooseSnippet("please click on the snippet you want to derive this snippet's duration from", newDur => {
+						this.containingProgram.chooseSnippetModeOverlay.classList.remove("active");
+						if (newDur.attrs.id == this.currentSnippet.attrs.id) {
+							this.showModificationError("a snippet cannot have its duration be a reference to its own duration (infinite recursion)");
+							return;
+						} else if (newDur.x2 > this.currentSnippet.x) {
+							this.showModificationError("a snippet deriving its duration from another snippet must come after the referenced snippet");
+							return;
+						}
+						let newValue = {
+							ref: {
+								id: newDur.attrs.id,
+								prop: "dur"
+							}
+						};
+						let newOption = document.createElement("option");
+						newOption.setAttribute("value", _(newValue));
+						newOption.innerHTML = this.getPropertyInfoText(newValue);
+						editor.appendChild(newOption);
+						editor.value = _(newValue);
+						durInfo.modifiedValue = JSON.stringify(newValue);
+						// since this a delayed callback, we have to render again
+						this.updateMasterButtons();
+						this.updateSelectionCount();
+					});
+				} else if (Object.keys(JSON.parse(editor.value))[0] == "event") {
+					durInfo.modifiedValue = editor.value;
+				}
+			}
+		);
+	}
+	
 	editProperty(propName, editorCreator, inputHandler = null) {
 		let propInfo = this.table.querySelector(`.${propName}.info`);
 		if (!propInfo.classList.contains("started-editing")) {
@@ -261,6 +323,9 @@ class InfoPanel {
 							break;
 						case "start":
 							this.currentSnippet.changeStart(JSON.parse(propInfo.modifiedValue));
+							break;
+						case "dur":
+							this.currentSnippet.changeDur(JSON.parse(propInfo.modifiedValue));
 							break;
 						case "track":
 							let newTrack = this.containingProgram.getTrackById(propInfo.modifiedValue);
@@ -331,14 +396,11 @@ class InfoPanel {
 			}
 			
 			let actions = {
-				// all instances of `(function(){})` are just placeholders for now which
-				// do nothing
 				name: this.editName,
 				track: this.editTrack,
 				source: this.editSource,
-				end: (function(){}),
-				dur: (function(){})
 				start: this.editStart,
+				dur: this.editDur
 			};
 			for (let button of this.table.querySelectorAll(".edit")) {
 				button.onclick = actions[button.classList[1]].bind(this);
@@ -363,6 +425,8 @@ class InfoPanel {
 					return `${refText}`;
 				}
 				break;
+			case "until":
+				return "until next " + this.getPropertyInfoText(prop.until);
 			case "event":
 				let dict = { button_press: "button press", boot: "boot" };
 				return dict[prop.event] + " event";
@@ -424,18 +488,9 @@ class InfoPanel {
 					<td><button class="edit start">edit</button></td>
 				</tr>
 				<tr>
-					<th>end</th>
-					<!-- TODO: serialize original value, consider cases where it is not present -->
-					<td class="info end" data-original-value="">
-						${"end" in this.currentSnippet.attrs ? this.getPropertyInfoText(this.currentSnippet.attrs.end) : ""}
-					</td>
-					<td><button class="edit end">edit</button></td>
-				</tr>
-				<tr>
 					<th>duration</th>
-					<!-- TODO: serialize original value, consider cases where it is not present -->
-					<td class="info dur" data-original-value="">
-						${"dur" in this.currentSnippet.attrs ? this.getPropertyInfoText(this.currentSnippet.attrs.dur) : ""}
+					<td class="info dur" data-original-value="${_(this.currentSnippet.dur)}">
+						${this.getPropertyInfoText(this.currentSnippet.dur)}
 					</td>
 					<td><button class="edit dur">edit</button></td>
 				</tr>

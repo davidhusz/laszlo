@@ -283,6 +283,21 @@ class Snippet {
 		return this.y + (this.height / 2);
 	}
 	
+	get dur() {
+		if ("dur" in this.attrs) {
+			return this.attrs.dur;
+		} else if ("end" in this.attrs) {
+			return { until: this.attrs.end };
+		} else if (this.isClone) {
+			return { ref:
+				{
+					id: this.attrs.source.ref.id,
+					prop: "dur"
+				}
+			};
+		}
+	}
+	
 	get recording() {
 		return this.clones.length > 0;
 	}
@@ -377,6 +392,18 @@ class Snippet {
 	
 	changeStart(newStart) {
 		this.attrs.start = newStart;
+		this.containingProgram.updateWorkspace();
+	}
+	
+	changeDur(newDur) {
+		let durType = Object.keys(newDur)[0];
+		switch (durType) {
+			case "ref":
+				this.attrs.dur = newDur;
+				break;
+			case "event":
+				this.attrs.end = newDur;
+		}
 		this.containingProgram.updateWorkspace();
 	}
 	
