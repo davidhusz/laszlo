@@ -414,28 +414,106 @@ class InfoPanel {
 	}
 	
 	deleteSelectedSnippets() {
-		let question;
+		let confirmation, confirmationWithDependents, confirmationWithDurationDependents;
 		let snippetCount = this.selectedSnippets.length;
-		if (snippetCount == 1) {
-			if (this.currentSnippet.attrs.name != undefined) {
-				question = `Delete snippet '${this.currentSnippet.attrs.name}'`;
-			} else {
-				question = `Delete this snippet`;
+		let clones = this.selectedSnippets.flatMap(snippet => snippet.clones);
+		let cloneCount = clones.length;
+		let dependents = [];
+		let dependentsOfClones = [];
+		let durationDependents = [];
+		for (let snippet of this.containingProgram.snippets) {
+			if ("ref" in snippet.attrs.start || "ref" in snippet.dur) {
+				let selectionIds = this.selectedSnippets.map(snippet_ => snippet_.attrs.id);
+				if (!(clones.includes(snippet))) {
+					if ("ref" in snippet.attrs.start && selectionIds.includes(snippet.attrs.start.ref.id)) {
+						dependents.push(snippet);
+					} else if ("ref" in snippet.dur && selectionIds.includes(snippet.dur.ref.id)) {
+						durationDependents.push(snippet);
+					} else {
+						for (let clone of clones) {
+							if ("ref" in snippet.attrs.start && snippet.attrs.start.ref.id == clone.attrs.id) {
+								dependentsOfClones.push({
+									clone: clone,
+									dependentOfClone: snippet
+								});
+							} else if ("ref" in snippet.dur && snippet.dur.ref.id == clone.attrs.id) {
+								durationDependents.push(snippet);
+							}
+						}
+					}
+				}
 			}
-		} else {
-			question = `Delete ${snippetCount} snippets`;
 		}
-		if (this.selectedSnippets.some(snippet => snippet.recording)) {
-			let cloneCount = clones.length;
-			question += ` and ${cloneCount} ${cloneCount == 1 ? "clone" : "clones"}`;
+		let dependentsCount = [...dependents, ...dependentsOfClones];
+		let durDependentsCount = durationDependents.length;
+		
+		if (dependentsCount > 0) {
+			confirmationWithDependents = (
+				`${dependentsCount} other ${
+						dependentsCount == 1
+							? "snippet has its start event"
+							: "snippets have their start events"
+					} referencing ${
+						snippetCount == 1
+							? "this snippet or one of its clones"
+							: "the selected snippets or one their clones"
+					}. ${
+						dependentsCount == 1
+							? "Its start event"
+							: "Their start events"
+					} will be changed to the ${
+						snippetCount == 1
+							? "start event of this snippet/its clone"
+							: "start events of the selected snippets/their clones"
+					} before deletion.`
+			);
 		}
 		
-		if (confirm(question+"?")) {
-			clones.forEach(clone => clone.remove());
-			this.selectedSnippets.forEach(snippet => snippet.remove());
-			this.containingProgram.updateAll();
-			this.containingProgram.clearSelection();
+		if (snippetCount == 1) {
+			if (this.currentSnippet.attrs.name != undefined) {
+				confirmation = `Delete snippet '${this.currentSnippet.attrs.name}'`;
+			} else {
+				confirmation = `Delete this snippet`;
+			}
+		} else {
+			confirmation = `Delete ${snippetCount} snippets`;
 		}
+		if (cloneCount) {
+			confirmation += ` and ${cloneCount} ${cloneCount == 1 ? "clone" : "clones"}`;
+		}
+		if (durDependentsCount > 0) {
+			confirmation += ` plus ${durDependentsCount} ${
+				durDependentsCount == 1 ? "snippet" : "snippets"
+			} deriving its duration from this snippet`;
+		}
+		confirmation += "?";
+		
+		if (confirmationWithDependents) {
+			if (!confirm(confirmationWithDependents)) {
+				return;
+			}
+		}
+		if (!confirm(confirmation)) {
+			return;
+		}
+		
+		dependentsOfClones.forEach(arg =>
+			arg.dependentOfClone.changeStart(arg.clone.attrs.start)
+		);
+		dependents.forEach(dependent =>
+			dependent.changeStart(this.currentSnippet.attrs.start)
+		);
+		durationDependents.forEach(dependent =>
+			dependent.remove()
+		);
+		clones.forEach(
+			clone => clone.remove()
+		);
+		this.selectedSnippets.forEach(
+			snippet => snippet.remove()
+		);
+		this.containingProgram.updateAll();
+		this.containingProgram.clearSelection();
 	}
 		
 	addMasterButtonHandlers() {
