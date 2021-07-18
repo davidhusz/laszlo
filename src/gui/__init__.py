@@ -62,6 +62,21 @@ class API:
             return True
         else:
             return False
+    
+    def export_as_python(self, output):
+        dest = self.window.create_file_dialog(
+            webview.SAVE_DIALOG,
+            directory = os.path.dirname(self.fname),
+            save_filename = self.fname,
+            file_types = ('Python files (*.py)',)
+        )
+        if dest:
+            converted_output = Program.fromJSON(output).as_python()
+            with open(dest[0], mode='w') as file:
+                file.write(converted_output+'\n')
+            return True
+        else:
+            return False
 
 
 def open_editor(input = None, with_start = True):

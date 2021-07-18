@@ -37,4 +37,5 @@ window.addEventListener("DOMContentLoaded", () => {
 	addMainMenuHandler("open");
 	addMainMenuHandler("save", [program.toJSON.bind(program)], "file saved.");
 	addMainMenuHandler("save-as", [program.toJSON.bind(program)], "file saved.");
+	addMainMenuHandler("export-as-python", [program.toJSON.bind(program)], "file exported.");
 });
