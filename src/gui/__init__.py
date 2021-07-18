@@ -3,6 +3,9 @@ from tempfile import TemporaryDirectory
 from shutil import copy
 import os.path
 
+from ..compiler import Program
+
+
 __all__ = ['open_editor']
 
 
@@ -11,7 +14,18 @@ class API:
         open_editor(with_start=False)
 
 
-def open_editor(title = None, input = None, with_start = True):
+def open_editor(input = None, with_start = True):
+    # Process input
+    if input:
+        if type(input) == str:
+            program = Program.fromYAML(input)
+        else:
+            program = Program.fromYAML(input.read())
+        title = program.attrs.get('title', 'untitled program')
+        json = program.as_json()
+    else:
+        title = 'untitled program'
+        json = ''
     # Create temporary directory
     temp_dir = TemporaryDirectory(prefix='laszlo.')
     # Copy over website files
@@ -24,11 +38,11 @@ def open_editor(title = None, input = None, with_start = True):
         copy(script_dir(asset), temp_dir.name)
     # Append input to JS file as global variable
     with open(js, mode='a') as file:
-        file.write(f'input = {repr(input or "")};\n')
+        file.write(f'input = {repr(json)};\n')
     # Create window
     api = API()
     window = webview.create_window(
-        title = f'{title or "untitled program"} - Laszlo Editor',
+        title = f'{title} - Laszlo Editor',
         url = url,
         js_api = api,
         # TODO: get client screen resolution, perhaps using pyautogui.size, or
