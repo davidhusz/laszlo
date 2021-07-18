@@ -35,6 +35,33 @@ class API:
             return True
         else:
             return False
+    
+    def save(self, output):
+        if self.fname:
+            converted_output = Program.fromJSON(output).as_yaml()
+            with open(self.fname, mode='w') as file:
+                file.write(converted_output)
+                return True
+        else:
+            return self.save_as(output)
+    
+    def save_as(self, output):
+        dest = self.window.create_file_dialog(
+            webview.SAVE_DIALOG,
+            directory = os.path.dirname(self.fname),
+            save_filename = self.fname,
+            file_types = (
+                'Laszlo files (*.laszlo)',
+                'All files (*.*)'
+            )
+        )
+        if dest:
+            converted_output = Program.fromJSON(output).as_yaml()
+            with open(dest[0], mode='w') as file:
+                file.write(converted_output)
+            return True
+        else:
+            return False
 
 
 def open_editor(input = None, with_start = True):

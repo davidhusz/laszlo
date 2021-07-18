@@ -35,4 +35,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	
 	addMainMenuHandler("new");
 	addMainMenuHandler("open");
+	addMainMenuHandler("save", [program.toJSON.bind(program)], "file saved.");
+	addMainMenuHandler("save-as", [program.toJSON.bind(program)], "file saved.");
 });
