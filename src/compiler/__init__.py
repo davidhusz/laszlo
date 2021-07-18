@@ -12,10 +12,9 @@ class Program:
 		self.tracks = tracks
 	
 	@classmethod
-	def fromYAML(cls, input):
-		parsed_input = yaml.load(input).data
-		version = parsed_input['version']
-		program_attrs = parsed_input['program']
+	def fromDict(cls, input):
+		version = input['version']
+		program_attrs = input['program']
 		tracks = []
 		for track_attrs in program_attrs.pop('tracks'):
 			snippets = []
@@ -25,6 +24,20 @@ class Program:
 		program = cls(program_attrs, tracks)
 		program.version = version
 		return program
+	
+	@classmethod
+	def fromYAML(cls, input):
+		parsed_input = yaml.load(input).data
+		return cls.fromDict(parsed_input)
+	
+	@classmethod
+	def fromJSON(cls, input):
+		parsed_input = json.loads(input)
+		instance = cls.fromDict(parsed_input)
+		for track in instance.tracks:
+			for snippet in track.snippets:
+				snippet.convert_attrs_reverse('json')
+		return instance
 	
 	def get_snippet_by_id(self, id):
 		for track in self.tracks:
@@ -102,6 +115,16 @@ class Snippet:
 		elif type(expr) == ast.Constant:
 			return expr.value
 	
+	def generate_expr(self, attr):
+		expr = ''
+		if 'ref' in attr:
+			expr += '$' + attr['ref']['id']
+			if 'prop' in attr['ref']:
+				expr += '.' + attr['ref']['prop']
+		elif 'calc' in attr:
+			raise NotImplementedError
+		return expr
+	
 	def convert_attrs(self, target):
 		if target == 'python':
 			conversions = {
@@ -125,7 +148,28 @@ class Snippet:
 				elif target == 'json':
 					expr = ast.parse(pythonic, mode='eval').body
 					self.attrs[attr] = self.parse_expr(expr)
-			
+	
+	def convert_attrs_reverse(self, origin):
+		if origin == 'json':
+			conversions = {
+				'input': {'stream': 'input'},
+				'boot': {'event': 'boot'},
+				'button_press': {'event': 'button_press'}
+			}
+		elif origin == 'python':
+			raise NotImplementedError
+		for attr, val in self.attrs.items():
+			if type(val) == dict:
+				if val in conversions.values():
+					# this is essentially the inverse of the `dict.get` function
+					# - we can't simply invert the conversions dict because that
+					# would mean using dicts as keys and they are not hashable
+					self.attrs[attr] = list(conversions.keys())[list(conversions.values()).index(val)]
+				else:
+					if origin == 'json':
+						self.attrs[attr] = self.generate_expr(val)
+					elif origin == 'python':
+						raise NotImplementedError
 	
 	def as_python(self, track_name):
 		self.convert_attrs('python')
