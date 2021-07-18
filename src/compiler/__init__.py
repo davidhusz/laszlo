@@ -159,6 +159,11 @@ if __name__ == '__main__':
 	parser.add_argument('-o', '--output', default=sys.stdout, type=argparse.FileType('w'))
 	parser.add_argument('-t', '--to', default='python', metavar='format')
 	args = parser.parse_args()
+	if len(sys.argv) == 1 and sys.stdin.isatty():
+		# if the user has provided no arguments and isn't piping into the
+		# program, just show them the help page and exit
+		parser.print_help()
+		sys.exit()
 	if args.to == 'python':
 		convert = laszlo2python
 	elif args.to == 'json':
