@@ -10,12 +10,17 @@ __all__ = ['open_editor']
 
 
 class API:
+    def __init__(self, window = None, fname = None):
+        self.window = window
+        self.fname = fname or ''
+    
     def new(self):
         open_editor(with_start=False)
     
     def open(self):
         new_files = self.window.create_file_dialog(
             webview.OPEN_DIALOG,
+            directory = os.path.dirname(self.fname),
             allow_multiple = True,
             file_types = (
                 'Laszlo files (*.laszlo)',
@@ -34,11 +39,14 @@ def open_editor(input = None, with_start = True):
     if input:
         if type(input) == str:
             program = Program.fromYAML(input)
+            fname = None
         else:
             program = Program.fromYAML(input.read())
+            fname = input.name
         title = program.attrs.get('title', 'untitled program')
         json = program.as_json()
     else:
+        fname = None
         title = 'untitled program'
         json = ''
     # Create temporary directory
@@ -55,7 +63,7 @@ def open_editor(input = None, with_start = True):
     with open(js, mode='a') as file:
         file.write(f'input = {repr(json)};\n')
     # Create window
-    api = API()
+    api = API(fname=fname)
     window = webview.create_window(
         title = f'{title} - Laszlo Editor',
         url = url,
