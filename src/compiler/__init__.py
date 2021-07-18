@@ -54,7 +54,7 @@ class Program:
 			f'{title} = Program()\n\n'
 		)
 		content = '\n\n'.join(track.as_python(title) for track in self.tracks)
-		footer = f'\n\n{title}.start()\n'
+		footer = f'\n\n{title}.start()'
 		return header + content + footer
 
 
@@ -110,4 +110,4 @@ if __name__ == '__main__':
 	parser.add_argument('input', nargs='?', default=sys.stdin, type=argparse.FileType('r'))
 	parser.add_argument('-o', '--output', default=sys.stdout, type=argparse.FileType('w'))
 	args = parser.parse_args()
-	args.output.write(laszlo2python(args.input.read()))
+	print(laszlo2python(args.input.read()), file=args.output)
