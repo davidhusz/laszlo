@@ -12,6 +12,21 @@ __all__ = ['open_editor']
 class API:
     def new(self):
         open_editor(with_start=False)
+    
+    def open(self):
+        new_files = self.window.create_file_dialog(
+            webview.OPEN_DIALOG,
+            allow_multiple = True,
+            file_types = (
+                'Laszlo files (*.laszlo)',
+                'All files (*.*)'
+            )
+        )
+        if new_files:
+            open_multiple_editors(
+                [open(file) for file in new_files],
+                with_start=False
+            )
 
 
 def open_editor(input = None, with_start = True):
@@ -57,7 +72,8 @@ def open_editor(input = None, with_start = True):
     if with_start:
         webview.start()
 
-def open_multiple_editors(inputs):
+def open_multiple_editors(inputs, with_start = True):
     for input in inputs:
         open_editor(input, with_start=False)
-    webview.start()
+    if with_start:
+        webview.start()

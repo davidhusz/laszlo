@@ -15,9 +15,12 @@ window.addEventListener("DOMContentLoaded", () => {
 		program = new Program({ title: "untitled program" }, [], options);
 		program.addTrack("untitled track");
 	}
-	document.querySelector("#main-menu .open").onclick = () => {
+	document.querySelector("#main-menu .new").onclick = () => {
 		// for some reason pywebview is still undefined when this script is loaded,
 		// which is why we have to wrap it in an anonymous function
+		pywebview.api.new().catch(error => alert(error));
+	}
+	document.querySelector("#main-menu .open").onclick = () => {
 		pywebview.api.open().catch(error => alert(error));
 	};
 });
