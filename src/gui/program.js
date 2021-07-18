@@ -36,6 +36,20 @@ class Program {
 		return new Program(programAttrs, tracks, options);
 	}
 	
+	toJSON() {
+		return JSON.stringify(this.toObject());
+	}
+	
+	toObject() {
+		return {
+			program: {
+				...this.attrs,
+				tracks: this.tracks.map(track => track.toObject())
+			},
+			version: "0.1"
+		};
+	}
+	
 	get snippets() {
 		return this.tracks.flatMap(track => track.snippets);
 	}
@@ -213,6 +227,13 @@ class Track {
 		});
 	}
 	
+	toObject() {
+		return {
+			...this.attrs,
+			snippets: this.snippets.map(snippet => snippet.toObject())
+		};
+	}
+	
 	get container() {
 		return document.getElementById(this.attrs.id);
 	}
@@ -281,6 +302,10 @@ class Snippet {
 		this.height = 100;
 		this._selected = false;
 		this._indirectlySelected = false;
+	}
+	
+	toObject() {
+		return this.attrs;
 	}
 	
 	setTransformOrigin() {
