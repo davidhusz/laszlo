@@ -2,6 +2,7 @@ import webview
 from tempfile import TemporaryDirectory
 from shutil import copy
 import os.path
+import sys
 
 from ..compiler import Program
 
@@ -87,7 +88,7 @@ def open_editor(input = None, with_start = True):
             fname = None
         else:
             program = Program.fromYAML(input.read())
-            fname = input.name
+            fname = input.name if input is not sys.stdin else None
         title = program.attrs.get('title', 'untitled program')
         json = program.as_json()
     else:
