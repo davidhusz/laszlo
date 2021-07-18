@@ -56,3 +56,8 @@ def open_editor(input = None, with_start = True):
     window.closed += temp_dir.cleanup
     if with_start:
         webview.start()
+
+def open_multiple_editors(inputs):
+    for input in inputs:
+        open_editor(input, with_start=False)
+    webview.start()
