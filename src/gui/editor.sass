@@ -23,7 +23,6 @@ $workspace-height: max(95%, 2000px)
 		max-width: 50%
 		text-align: center
 		font-size: xx-large
-		color: white
 
 @mixin slightly-bigger
 	transform: scale(1.05)
@@ -36,8 +35,10 @@ $workspace-height: max(95%, 2000px)
 
 body
 	font-family: sans-serif
+	color: white
 	button:not(:disabled)
 		cursor: pointer
+
 
 #main
 	position: fixed
@@ -49,12 +50,20 @@ body
 	display: grid
 	// TODO: select min values for all but the workspace
 	grid-template-columns: 17.5% auto
-	grid-template-rows: 5% auto $info-panel-height
+	grid-template-rows: min-content auto $info-panel-height
 	grid-template-areas: "main-menu main-menu" "mixer workspace" "info-panel info-panel"
 
 
 #main-menu
 	grid-area: main-menu
+	span
+		display: inline-block
+		padding: 5px
+		opacity: 0.6
+		&:hover
+			cursor: pointer
+			color: $dark-background
+			background-color: #e8e8e8
 
 
 #mixer
@@ -131,7 +140,6 @@ body
 	// TODO: same as for the other grid
 	grid-template-rows: auto 20%
 	grid-template-areas: "snippet-info" "selection-count"
-	color: white
 	
 	.snippet-info
 		grid-area: snippet-info
