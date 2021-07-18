@@ -102,7 +102,7 @@ def open_editor(input = None, with_start = True):
         return os.path.join(os.path.dirname(__file__), file)
     url = copy(script_dir('editor.html'), temp_dir.name)
     js = copy(script_dir('main.js'), temp_dir.name)
-    assets = ['editor.css', 'program.js', 'infopanel.js']
+    assets = ['editor.css', 'program.js', 'infopanel.js', 'AreaKilometer50.ttf']
     for asset in assets:
         copy(script_dir(asset), temp_dir.name)
     # Append input to JS file as global variable

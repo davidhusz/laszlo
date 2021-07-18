@@ -33,8 +33,12 @@ $workspace-height: max(95%, 2000px)
 		// https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar
 		display: none
 
+@font-face
+	font-family: area-kilometer
+	src: url("AreaKilometer50.ttf")
+
 body
-	font-family: sans-serif
+	font-family: area-kilometer
 	color: white
 	button:not(:disabled)
 		cursor: pointer
@@ -163,8 +167,9 @@ body
 				text-align: right
 			.snippet-ref
 				font-weight: bold
+				font-style: italic
+				// text-decoration: underline
 				&:hover
-					// text-decoration: underline
 					cursor: pointer
 		.master-buttons
 			grid-area: master-buttons
