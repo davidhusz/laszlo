@@ -77,6 +77,8 @@ def open_editor(input = None, with_start = True):
     )
     api.window = window
     window.closed += temp_dir.cleanup
+    if fname:
+        window.closed += file.close
     if with_start:
         webview.start()
 
