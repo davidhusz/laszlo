@@ -59,10 +59,22 @@ class Program:
 		return header + content + footer
 	
 	def as_dict(self):
-		return {**self.attrs, 'tracks': [track.as_dict() for track in self.tracks]}
+		return {
+			'program': {
+				**self.attrs,
+				'tracks': [track.as_dict() for track in self.tracks]
+			},
+			'version': self.version
+		}
+	
+	def as_yaml(self):
+		return yaml.as_document(self.as_dict()).as_yaml()
 	
 	def as_json(self):
-		return json.dumps({'program': self.as_dict(), 'version': self.version})
+		for track in self.tracks:
+			for snippet in track.snippets:
+				snippet.convert_attrs('json')
+		return json.dumps(self.as_dict())
 
 
 class Track:
@@ -183,7 +195,6 @@ class Snippet:
 		return output
 	
 	def as_dict(self):
-		self.convert_attrs('json')
 		return self.attrs
 
 
