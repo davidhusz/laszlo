@@ -15,12 +15,24 @@ window.addEventListener("DOMContentLoaded", () => {
 		program = new Program({ title: "untitled program" }, [], options);
 		program.addTrack("untitled track");
 	}
-	document.querySelector("#main-menu .new").onclick = () => {
-		// for some reason pywebview is still undefined when this script is loaded,
-		// which is why we have to wrap it in an anonymous function
-		pywebview.api.new().catch(error => alert(error));
-	}
-	document.querySelector("#main-menu .open").onclick = () => {
-		pywebview.api.open().catch(error => alert(error));
+	
+	let addMainMenuHandler = function(action, argumentProviders = [], messageOnEffect = null) {
+		document.querySelector(`#main-menu .${action}`).onclick = () => {
+			// for some reason pywebview doesn't know the `replaceAll` string method,
+			// so instead we have to use `replace` with a regex
+			let apiMethod = action.replace(new RegExp("-", "g"), "_")
+			let args = argumentProviders.map(provider => provider());
+			pywebview.api[apiMethod](...args)
+				.then(hadEffect => {
+					if (hadEffect && messageOnEffect) {
+						program.infoPanel.selectionCount.querySelector("div").innerText = messageOnEffect;
+					}
+				}).catch(error => {
+					alert(error);
+				});
+		};
 	};
+	
+	addMainMenuHandler("new");
+	addMainMenuHandler("open");
 });

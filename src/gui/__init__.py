@@ -32,6 +32,9 @@ class API:
                 [open(file) for file in new_files],
                 with_start=False
             )
+            return True
+        else:
+            return False
 
 
 def open_editor(input = None, with_start = True):
