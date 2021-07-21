@@ -2,6 +2,8 @@ $dark-background: #242424
 // $light-background: #4f565e
 $light-background: #33383e
 $info-panel-height: 40%  // needed to adjust the overlay height
+$off-white: #e8e8e8
+$selection: #eacd5b
 // $workspace-height is needed to sync the mixer height with it
 // 95% because otherwise we always get a scrollbar for some reason
 $workspace-height: max(95%, 2000px)
@@ -63,11 +65,11 @@ body
 	span
 		display: inline-block
 		padding: 5px
-		opacity: 0.6
+		color: $off-white
 		&:hover
 			cursor: pointer
 			color: $dark-background
-			background-color: #e8e8e8
+			background-color: $off-white
 
 
 #mixer
@@ -85,8 +87,7 @@ body
 			cursor: initial
 			fill: #4f4f4f
 		text
-			fill: white
-			opacity: 0.6
+			fill: darken(white, 30%)
 			text-anchor: start
 			dominant-baseline: hanging
 			cursor: pointer
@@ -107,7 +108,7 @@ body
 	
 	.snippet
 		rect
-			fill: #e8e8e8
+			fill: $off-white
 			stroke: black
 			stroke-width: 2px
 			stroke-opacity: 0.25
@@ -126,11 +127,13 @@ body
 		&:not(.recording) .recording-indicator
 			visibility: hidden
 		
-		&.clone
-			opacity: 0.8
+		&.clone rect
+			fill: darken($off-white, 15%)
 		
 		&.selected rect, &.indirectly-selected rect
-			fill: #eacd5b
+			fill: $selection
+		&.clone.selected rect, &.clone.indirectly-selected rect
+			fill: darken($selection, 15%)
 		&.selected
 			@include slightly-bigger
 
@@ -152,7 +155,7 @@ body
 		display: grid
 		grid-template-rows: auto 10%
 		grid-template-areas: "info-table" "master-buttons"
-		opacity: 0.75
+		color: darken(white, 25%)
 		// padding: 10px
 		table
 			grid-area: info-table
@@ -180,11 +183,11 @@ body
 		grid-area: selection-count
 		@include center-within
 		font-size: x-large
-		opacity: 0.5
+		color: darken(white, 50%)
 	
 	.add-snippet-area
 		@include center-text-within
-		opacity: 0.5
+		color: darken(white, 50%)
 		cursor: cell
 
 
