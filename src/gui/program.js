@@ -7,6 +7,7 @@ class Program {
 		[...this.tracks, ...this.snippets].forEach(item => {
 			item.containingProgram = this;
 		});
+		this.firstLoad = true;
 		this.chooseSnippetMode = false;
 		this.chooseSnippetModeOverlay = document.querySelector("#choose-snippet-mode-overlay");
 		if ("mixerContainer" in options) {
@@ -22,6 +23,7 @@ class Program {
 			this.infoPanel.containingProgram = this;
 			this.infoPanel.update();
 		}
+		this.firstLoad = false;
 	}
 	
 	static fromJSON(json, options = {}) {
@@ -273,12 +275,18 @@ class Track {
 	
 	renderMixer() {
 		return `
-			<g class="track-mixer" id="${this.attrs.id}">
+			<g class="track-mixer" id="${this.attrs.id}"
+				opacity="${this.containingProgram.firstLoad ? 0 : 1}">
 				<rect x="0" y="${this.y + this.padding}px" width="100%"
 					height="${this.height - (2 * this.padding)}px" rx="5px"/>
 				<text x="10px" y="${this.y + this.padding + 10}px">
 					${this.attrs.name}
 				</text>
+				${this.containingProgram.firstLoad
+					? `<animate attributeName="opacity" from="0" to="1"
+							begin="${this.y/this.height/4}s" dur="0.5s" fill="freeze"/>`
+					: ``
+				}
 			</g>
 		`;
 	}
@@ -513,7 +521,8 @@ class Snippet {
 	
 	renderWorkspace() {
 		return `
-			<g class="${this.getCSSClasses()}" id="${this.attrs.id}">
+			<g class="${this.getCSSClasses()}" id="${this.attrs.id}"
+				opacity="${this.containingProgram.firstLoad ? 0 : 1}">
 				<rect x="${this.x}px" y="${this.y}px"
 					width="${this.width}px" height="${this.height}px" rx="5px"/>
 				<text x="${this.x + 10}px" y="${this.y2 - 10}px">
@@ -521,6 +530,12 @@ class Snippet {
 				</text>
 				<circle class="recording-indicator"
 					cx="${this.x2 - 10}" cy="${this.y + 10}" r="5px"/>
+				${this.containingProgram.firstLoad
+					? `<animate attributeName="opacity" from="0" to="1"
+							begin="${(this.x/this.width/8) + (this.y/this.height/7)}s"
+							dur="0.5s" fill="freeze"/>`
+					: ``
+				}
 			</g>
 		`;
 	}
