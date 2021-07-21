@@ -6,6 +6,7 @@ $light-background: #33383e
 $info-panel-height: 40%  // needed to adjust the overlay height
 $off-white: #e8e8e8
 $off-white-text: darken(white, 30%)
+$line-darkening: 50%
 $selection: #eacd5b
 // $workspace-height is needed to sync the mixer height with it
 // 95% because otherwise we always get a scrollbar for some reason
@@ -115,12 +116,11 @@ body
 		transition: transform 0.1s
 		rect
 			fill: $off-white
-			stroke: black
 			stroke-width: 2px
-			stroke-opacity: 0.25
+			stroke: darken($off-white, $line-darkening)
 		text
 			fill: black
-			opacity: 0.5
+			opacity: $line-darkening
 		&:hover, &.ref-peek
 			cursor: pointer
 			@include slightly-bigger
@@ -128,8 +128,8 @@ body
 		.recording-indicator
 			fill: none
 			stroke: black
-			stroke-width: 1px
-			stroke-opacity: 0.75
+			stroke-width: 2px
+			stroke-opacity: $line-darkening
 		&:not(.recording) .recording-indicator
 			visibility: hidden
 		
