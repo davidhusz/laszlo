@@ -32,12 +32,6 @@ $workspace-height: max(95%, 2000px)
 @mixin slightly-bigger
 	transform: scale(1.05)
 
-@mixin style-scrollbar
-	&::-webkit-scrollbar
-		// TODO: style scrollbar properly
-		// https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar
-		display: none
-
 @font-face
 	font-family: area-kilometer
 	src: url("AreaKilometer50.ttf")
@@ -81,7 +75,8 @@ body
 		width: 100%
 		height: $workspace-height
 	overflow-y: scroll
-	@include style-scrollbar
+	&::-webkit-scrollbar
+		display: none
 	margin-right: 5px
 	cursor: cell
 	
@@ -100,7 +95,12 @@ body
 	grid-area: workspace
 	background-color: $light-background
 	overflow: scroll
-	@include style-scrollbar
+	&::-webkit-scrollbar, &::-webkit-scrollbar-corner
+		background-color: $dark-background
+	&::-webkit-scrollbar-thumb
+		background-color: $light-background
+		border: medium solid $dark-background
+		border-radius: 10px
 	svg
 		width: max(100%, 3000px)
 		height: $workspace-height
