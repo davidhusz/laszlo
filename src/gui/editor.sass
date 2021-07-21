@@ -1,3 +1,5 @@
+@use "sass:color"
+
 $dark-background: #242424
 // $light-background: #4f565e
 $light-background: #33383e
@@ -133,7 +135,7 @@ body
 		&.selected rect, &.indirectly-selected rect
 			fill: $selection
 		&.clone.selected rect, &.clone.indirectly-selected rect
-			fill: darken($selection, 15%)
+			fill: color.scale($selection, $lightness: -15%, $saturation: -40%)
 		&.selected
 			@include slightly-bigger
 
