@@ -56,6 +56,19 @@ class Program {
 		return this.tracks.flatMap(track => track.snippets);
 	}
 	
+	get buttonPressPositions() {
+		return this.snippets.flatMap(snippet => {
+			let positions = [];
+			if (JSON.stringify(snippet.attrs.start) == '{"event":"button_press"}') {
+				positions.push(snippet.x);
+			}
+			if (JSON.stringify(snippet.dur) == '{"until":{"event":"button_press"}}') {
+				positions.push(snippet.x2)
+			}
+			return positions;
+		});
+	}
+	
 	getSnippetById(id) {
 		return this.snippets.find(snippet => snippet.attrs.id == id);
 	}
@@ -190,6 +203,9 @@ class Program {
 	renderWorkspace() {
 		return `
 			<svg>
+				${this.buttonPressPositions.map(x => `
+					<line class="button-press-indicator" x1="${x}px" y1="0px" x2="${x}" y2="100%"/>
+				`)}
 				${this.tracks.map(track => track.renderWorkspace()).join("")}
 			</svg>
 		`;
