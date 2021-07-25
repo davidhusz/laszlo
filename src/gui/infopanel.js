@@ -139,7 +139,7 @@ class InfoPanel {
 						<option value="${_({stream: "input"})}"
 							${sourceType == "stream" ? "selected" : ""}>live input</option>
 						<option value="clone">clone another snippet...</option>
-						<option value="file">from file...</option>
+						<!-- <option value="file">from file...</option> -->
 					</select>
 				`;
 				return editor;
