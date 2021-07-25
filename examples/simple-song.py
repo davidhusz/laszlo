@@ -50,18 +50,24 @@ t2 = program.add_track('bass')
 s7 = t2.add_snippet(
 	source = Input(),
 	start = s3.end,
-	dur = s2.dur
+	dur = s2.dur,
+	# this here is an example of something that we can add using the python
+	# module, but which isn't (yet) available as a feature in the gui - fx
+	# chains on top of a snippet
+	fx = [effects.PitchShift(-12)]
 )
 
 s8 = t2.add_snippet(
 	source = Input(),
 	start = s7.end,
-	dur = s3.dur
+	dur = s3.dur,
+	fx = [effects.PitchShift(-12)]
 )
 
 s9 = t2.add_snippet(
 	source = s8,
-	start = s6.end
+	start = s6.end,
+	fx = [effects.PitchShift(-12)]
 )
 
 t3 = program.add_track('lead guitar')
