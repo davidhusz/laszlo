@@ -76,7 +76,7 @@ class Track:
 				snippet = LiveDependentLengthSnippet(*args)
 			elif isinstance(dur, (float, int)):
 				# snippet = LiveFixedLengthSnippet(*args)
-				pass
+				raise NotImplementedError
 			else:
 				raise Exception('oh no, this shouldnt be able to happen')
 		elif isinstance(source, (BaseSnippet, str)):
@@ -87,23 +87,23 @@ class Track:
 			elif end is not None:
 				if isinstance(source, BaseSnippet):
 					# snippet = ClonedUndeterminedLengthSnippet(*args)
-					pass
+					raise NotImplementedError
 				else:
 					# snippet = PrerecordedUndeterminedLengthSnippet(*args)
-					pass
+					raise NotImplementedError
 			elif dur is None or isinstance(dur, UndeterminedDuration):
 				if isinstance(source, BaseSnippet):
 					snippet = ClonedDependentLengthSnippet(*args)
 				else:
 					# snippet = PrerecordedDependentLengthSnippet(*args)
-					pass
+					raise NotImplementedError
 			elif isinstance(dur, (float, int)):
 				if isinstance(source, BaseSnippet):
 					# snippet = ClonedFixedLengthSnippet(*args)
-					pass
+					raise NotImplementedError
 				else:
 					# snippet = PrerecordedFixedLengthSnippet(*args)
-					pass
+					raise NotImplementedError
 			else:
 				raise Exception('oh no, this shouldnt be able to happen')
 		else:
