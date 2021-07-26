@@ -69,4 +69,4 @@ program:
       start: $s6.end
       dur: $s3.dur
 
-version: 0.1
+version: 0.1.0
