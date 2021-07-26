@@ -53,27 +53,33 @@ main () (
 	echo "Generating temporary $gui_init"
 	generate_gui_init < "$gui_init_backup" > "$gui_init"
 	
-	entry_point=$script_dir/laszlo_bin
+	entry_point=$script_dir/laszlo-entry-point
 	echo "Creating entry point $entry_point"
-#	echo "from src.laszlo.gui.__main__ import main; main(); exec('''$(<examples/simple-song.py)''')" > "$entry_point"
 	echo "from src.laszlo.gui.__main__ import main; main()" > "$entry_point"
 	
-	# shellcheck disable=1090
-	source "$script_dir/venv/bin/activate"
-	echo "Generating binary"
-	if command -v pyinstaller > /dev/null; then
-		pyinstaller=pyinstaller
-	elif command -v pyinstaller.exe > /dev/null; then
-		# for WSL
-		pyinstaller=pyinstaller.exe
+	if [[ $(uname -r) == *Microsoft* ]]; then
+		# running under WSL
+		pyinstaller="pyinstaller.exe \
+			--noconsole \
+			--hidden-import laszlo.engine \
+			--collect-all pyo"
 	else
-		echo "pyinstaller cannot be found. did you activate the virtual environment?"
+		# shellcheck disable=1090
+		source "$script_dir/venv/bin/activate"
+		pyinstaller="pyinstaller"
 	fi
-#	$pyinstaller --onefile --noconsole --specpath "$script_dir" --collect-submodules laszlo --collect-all pyo "$entry_point"
-	$pyinstaller --onefile --noconsole --specpath "$script_dir" "$entry_point"
 	
 	mv "$gui_init_backup" "$gui_init"
 	rm "$entry_point" "$entry_point.spec"
+	version=$(python3 -m src.laszlo.gui --version)
+	os=$(uname -s)
+	cpu=$(uname -m)
+	
+	echo "Generating binary"
+	$pyinstaller \
+		--onefile \
+		--specpath "$script_dir" "$entry_point" \
+		--name "laszlo-$version-bin-${os,,}-$cpu"
 )
 
 main
