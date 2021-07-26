@@ -1,0 +1,72 @@
+program:
+  title: A simple song
+  
+  tracks:
+  - id: t1
+    name: rhythm guitar
+    snippets:
+    - id: s1
+      name: pre-roll
+      source: input
+      start: boot
+      end: button_press
+    
+    - id: s2
+      name: verse guitar
+      source: input
+      start: $s1.end
+      end: button_press
+    
+    - id: s3
+      name: chorus guitar
+      source: input
+      start: $s2.end
+      end: button_press
+    
+    - id: s4
+      source: $s2
+      start: $s3.end
+    
+    - id: s5
+      source: $s3
+      start: $s4.end
+    
+    - id: s6
+      name: bridge guitar
+      source: input
+      start: $s5.end
+      end: button_press
+    
+    - id: s12
+      source: $s3
+      start: $s6.end
+  
+  - id: t2
+    name: bass
+    snippets:
+    - id: s7
+      name: verse bass
+      source: input
+      start: $s3.end
+      dur: $s2.dur
+    
+    - id: s8
+      name: chorus bass
+      source: input
+      start: $s7.end
+      dur: $s3.dur
+    
+    - id: s9
+      source: $s8
+      start: $s6.end
+  
+  - id: t3
+    name: lead guitar
+    snippets:
+    - id: s10
+      name: chorus lead guitar
+      source: input
+      start: $s6.end
+      dur: $s3.dur
+
+version: 0.1.0

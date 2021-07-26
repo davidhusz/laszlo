@@ -1,0 +1,217 @@
+@use "sass:color"
+
+$dark-background: #242424
+// $light-background: #4f565e
+$light-background: #33383e
+$off-white: #e8e8e8
+$off-white-text: darken(white, 30%)
+$line-darkening: 50%
+$selection: #eacd5b
+// $workspace-height is needed to sync the mixer height with it
+// 95% because otherwise we always get a scrollbar for some reason
+$workspace-height: max(95%, 2000px)
+$info-panel-height: 35%  // needed to adjust the overlay height
+
+@mixin center-within
+	height: 100%
+	margin: auto
+	> *
+		position: relative
+		top: 50%
+		transform: translateY(-50%)
+
+@mixin center-text-within
+	div
+		position: relative
+		top: 50%
+		transform: translateY(-50%)
+		margin: auto
+		max-width: 50%
+		text-align: center
+		font-size: xx-large
+
+@mixin slightly-bigger
+	transform: scale(1.05)
+
+@font-face
+	font-family: area-kilometer
+	src: url("AreaKilometer50.ttf")
+
+body
+	font-family: area-kilometer
+	color: white
+	button:not(:disabled)
+		cursor: pointer
+
+
+#main
+	position: fixed
+	top: 0
+	left: 0
+	width: 100%
+	height: 100%
+	background-color: $dark-background
+	display: grid
+	// TODO: select min values for all but the workspace
+	grid-template-columns: 17.5% auto
+	grid-template-rows: min-content auto $info-panel-height
+	grid-template-areas: "main-menu main-menu" "mixer workspace" "info-panel info-panel"
+
+
+#main-menu
+	grid-area: main-menu
+	span
+		display: inline-block
+		padding: 5px
+		color: $off-white-text
+		&:hover
+			cursor: pointer
+			color: $dark-background
+			background-color: $off-white-text
+
+
+#mixer
+	grid-area: mixer
+	svg
+		width: 100%
+		height: $workspace-height
+	overflow-y: scroll
+	&::-webkit-scrollbar
+		display: none
+	margin-right: 5px
+	cursor: cell
+	
+	.track-mixer
+		rect
+			cursor: initial
+			fill: #4f4f4f
+		text
+			fill: $off-white-text
+			text-anchor: start
+			dominant-baseline: hanging
+			&:hover
+				fill: darken($off-white-text, 20%)
+				cursor: pointer
+
+
+#workspace
+	grid-area: workspace
+	background-color: $light-background
+	overflow: scroll
+	&::-webkit-scrollbar, &::-webkit-scrollbar-corner
+		background-color: $dark-background
+	&::-webkit-scrollbar-thumb
+		background-color: $light-background
+		border: medium solid $dark-background
+		border-radius: 10px
+	svg
+		width: max(100%, 3000px)
+		height: $workspace-height
+	
+	.track-separator
+		stroke: black
+		stroke-dasharray: 8px
+		display: none
+	
+	.button-press-indicator
+		stroke: black
+		stroke-width: 2px
+		stroke-dasharray: 8px
+	
+	.snippet
+		transition: transform 0.1s
+		rect
+			fill: $off-white
+			stroke-width: 2px
+			stroke: darken($off-white, $line-darkening)
+		text
+			fill: black
+			opacity: $line-darkening
+		&:hover, &.ref-peek
+			cursor: pointer
+			@include slightly-bigger
+		
+		.recording-indicator
+			fill: none
+			stroke: black
+			stroke-width: 2px
+			stroke-opacity: $line-darkening
+		&:not(.recording) .recording-indicator
+			visibility: hidden
+		
+		&.clone rect
+			fill: darken($off-white, 15%)
+		
+		&.selected rect, &.indirectly-selected rect
+			fill: $selection
+		&.clone.selected rect, &.clone.indirectly-selected rect
+			fill: color.scale($selection, $lightness: -15%, $saturation: -40%)
+		&.selected
+			@include slightly-bigger
+
+
+#info-panel
+	grid-area: info-panel
+	width: 100%
+	height: 100%
+	margin-top: 5px
+	display: grid
+	// TODO: same as for the other grid
+	grid-template-rows: auto 20%
+	grid-template-areas: "snippet-info" "selection-count"
+	
+	.snippet-info
+		grid-area: snippet-info
+		@include center-within
+		width: 100%
+		display: grid
+		grid-template-rows: auto 10%
+		grid-template-areas: "info-table" "master-buttons"
+		color: darken(white, 25%)
+		// padding: 10px
+		table
+			grid-area: info-table
+			width: max-content
+			height: min-content
+			margin-left: auto
+			margin-right: auto
+			th, td
+				padding: 2px 10px
+			th
+				font-weight: normal
+				text-align: right
+			.snippet-ref
+				font-weight: bold
+				font-style: italic
+				// text-decoration: underline
+				&:hover
+					cursor: pointer
+		.master-buttons
+			grid-area: master-buttons
+			// @include center-within
+			text-align: center
+	
+	.selection-count
+		grid-area: selection-count
+		@include center-within
+		font-size: x-large
+		color: darken(white, 50%)
+	
+	.add-snippet-area
+		@include center-text-within
+		color: darken(white, 50%)
+		cursor: cell
+
+
+#choose-snippet-mode-overlay
+	position: fixed
+	width: 100%
+	height: $info-panel-height
+	bottom: 0
+	left: 0
+	background-color: black
+	opacity: 0.8
+	display: none
+	@include center-text-within
+	&.active
+		display: block

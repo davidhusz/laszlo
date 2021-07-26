@@ -1,0 +1,6 @@
+include src/laszlo/gui/editor.html
+include src/laszlo/gui/editor.css
+include src/laszlo/gui/main.js
+include src/laszlo/gui/program.js
+include src/laszlo/gui/infopanel.js
+include src/laszlo/gui/AreaKilometer50.ttf
