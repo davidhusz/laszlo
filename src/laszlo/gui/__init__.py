@@ -2,6 +2,7 @@ import webview
 from tempfile import TemporaryDirectory
 from shutil import copy
 import os.path
+import subprocess
 import sys
 
 from ..compiler import Program
@@ -63,6 +64,29 @@ class API:
             return True
         else:
             return False
+    
+    def run(self, output):
+        converted_output = Program.fromJSON(output).as_python()
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            # If this condition is true, we're running in a PyInstaller bundle,
+            # which means that `sys.executable` points to the generated binary
+            # rather than the Python interpreter. However, for this method we
+            # need to be able to execute arbitrary code in a Python subprocess.
+            # For this purpose the CLI has an undocumented `--exec` option, with
+            # which we can pass the code we'd like to execute to the Laszlo
+            # executable.
+            command = [sys.executable, '--exec']
+        else:
+            command = [sys.executable, '-c']
+        command.append(converted_output)
+        if sys.platform not in ('win32', 'darwin'):
+            self.window.hide()
+            subprocess.run(command, check=True)
+            self.window.show()
+            self.window.restore()
+        else:
+            subprocess.run(command, check=True, creationflags=subprocess.CREATE_NEW_CONSOLE)
+        return True
     
     def export_as_python(self, output):
         dest = self.window.create_file_dialog(
