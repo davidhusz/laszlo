@@ -3,9 +3,6 @@
 # This script creates a standalone binary of the Lazlo GUI (it does not include
 # the audio engine). It requires PyInstaller.
 
-# TODO:
-# set up trap function for recovering __init__.py and removing laszlo_bin
-
 set -euo pipefail
 
 script_dir=$(dirname "$0")
@@ -57,6 +54,13 @@ main () (
 	echo "Creating entry point $entry_point"
 	echo "from src.laszlo.gui.__main__ import main; main()" > "$entry_point"
 	
+	# shellcheck disable=2064
+	trap \
+		"echo 'Exit - restoring files'
+		mv '$gui_init_backup' '$gui_init'
+		rm -f '$entry_point' '$script_dir'/*.spec" \
+		EXIT
+	
 	if [[ $(uname -r) == *Microsoft* ]]; then
 		# running under WSL
 		pyinstaller="pyinstaller.exe \
@@ -69,8 +73,6 @@ main () (
 		pyinstaller="pyinstaller"
 	fi
 	
-	mv "$gui_init_backup" "$gui_init"
-	rm "$entry_point" "$entry_point.spec"
 	version=$(python3 -m src.laszlo.gui --version)
 	os=$(uname -s)
 	cpu=$(uname -m)
