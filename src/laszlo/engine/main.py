@@ -15,7 +15,10 @@ class Source:
 
 class Input(Source):
 	def get_raw(self):
-		return pyo.Input(chnl=1).mix(2)
+		if not raspberry:
+			return pyo.Input(chnl=1).mix(2)
+		else:
+			return pyo.Input(chnl=0).mix(2)
 
 
 class Program:
@@ -28,7 +31,10 @@ class Program:
 		return track
 	
 	def _boot_server(self):
-		self.server = pyo.Server().boot()
+		if not raspberry:
+			self.server = pyo.Server().boot()
+		else:
+			self.server = pyo.Server(ichnls=1).boot()
 		self.server.start()
 	
 	def _define_events(self):
