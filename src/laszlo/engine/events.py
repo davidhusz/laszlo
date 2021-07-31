@@ -83,10 +83,16 @@ class Time(Event):
 
 
 class ButtonPress(Event):
-	pass
+    '''
+    An event that fires each time a button/footswitch is pressed.
+    '''
+    pass
 
 
 class Boot(Event):
+    '''
+    An event that fires when the program starts.
+    '''
 	# TODO: raise Error if instantiated multiple times
 	pass
 

@@ -14,6 +14,9 @@ class Source:
 
 
 class Input(Source):
+	'''
+	Live audio input.
+	'''
 	def get_raw(self):
 		if not raspberry:
 			return pyo.Input(chnl=1).mix(2)
@@ -22,10 +25,18 @@ class Input(Source):
 
 
 class Program:
+	'''
+	A class representing song structures.
+	'''
 	def __init__(self):
 		self.tracks = []
 	
 	def add_track(self, name = None):
+		'''
+		Add a track for grouping snippets.
+		
+		name: Name of the track (optional)
+		'''
 		track = Track(name or 'Untitled track')
 		self.tracks.append(track)
 		return track
@@ -42,6 +53,10 @@ class Program:
 			track._define_events()
 	
 	def start(self):
+		'''
+		Start the performance. This boots the audio server and either performs
+		user-defined actions, or awaits user-defined instructions.
+		'''
 		self._boot_server()
 		self._define_events()
 		events._handler.emit_event(events.Boot)
@@ -57,11 +72,34 @@ class Program:
 
 
 class Track:
+	'''
+	A track for grouping snippets.
+	
+	name: Name of the track
+	'''
 	def __init__(self, name):
 		self.name = name
 		self.snippets = []
 	
 	def add_snippet(self, source, start, *, end = None, dur = None, repeat = None, fx = None, monitoring = True):
+		'''
+		Add a snippet.
+		
+		source: The input source. Can be either an instance of the Source
+			class, such as Input, or a shallow copy of another snippet
+		start: The start event. Must be an instance of the Event class. Can be
+			a shallow copy of another snippet's start or stop
+		end: The end event. Must be an instance of the Event Class. Can be a
+			shallow copy of another snippet's start or stop (optional)
+		dur: The duration. Can be either a time in seconds or a calculation
+			(such as a mulitiplication of another snippet's duration, or an
+			addition of another snippet's end and a time in seconds) (optional)
+		repeat: How many times the snippet should be repeated. Default is 1,
+			i.e. no repetition. If -1, it will be looped indefinitely (optional)
+		fx: A list of effects (optional)
+		monitoring: Whether the snippet's sound output should be sent to the
+			DAC. Default is True (optional)
+		'''
 		# TODO: refactoring
 		if repeat is None:
 			repeat_was_default = True
