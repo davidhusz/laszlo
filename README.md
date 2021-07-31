@@ -54,8 +54,8 @@ song.start()
 ## Installation
 ### Using pip
 
-	wget https://github.com/davidhusz/laszlo/releases/download/v0.1.0/laszlo-0.1.0-py3-none-any.whl
-	pip install laszlo-0.1.0-py3-none-any.whl
+	wget https://github.com/davidhusz/laszlo/releases/download/v0.2.0/laszlo-0.2.0-py3-none-any.whl
+	pip install laszlo-0.2.0-py3-none-any.whl
 
 After that you can launch the editor with:
 
@@ -84,8 +84,8 @@ After that you can install `laszlo` with:
 	# the system site packages directory contains our pyo package
 	python3 -m venv --system-site-packages laszlo-venv
 	source laszlo-venv/bin/activate
-	wget https://github.com/davidhusz/laszlo/releases/download/v0.1.0/laszlo-0.1.0-py3-none-any.whl
-	python3 -m pip install --no-dependencies laszlo-0.1.0-py3-none-any.whl
+	wget https://github.com/davidhusz/laszlo/releases/download/v0.2.0/laszlo-0.2.0-py3-none-any.whl
+	python3 -m pip install --no-dependencies laszlo-0.2.0-py3-none-any.whl
 
 Run an example file with:
 

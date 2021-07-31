@@ -48,7 +48,7 @@ class Program {
 				...this.attrs,
 				tracks: this.tracks.map(track => track.toObject())
 			},
-			version: "0.1.0"
+			version: "0.2.0"
 		};
 	}
 	

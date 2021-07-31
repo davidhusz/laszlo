@@ -5,7 +5,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('input', nargs='*', default=None, type=argparse.FileType('r'))
     parser.add_argument('--exec', help=argparse.SUPPRESS)
-    parser.add_argument('--version', action='version', version='0.1.0')
+    parser.add_argument('--version', action='version', version='0.2.0')
     args = parser.parse_args()
     if args.exec:
         exec(args.exec)
