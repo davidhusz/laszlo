@@ -8,7 +8,23 @@ try:
 	button = Button(25)
 	on_air = led.on
 	off_air = led.off
-	wait = button.wait_for_press
+	button_has_been_released = True
+	def button_release():
+		global button_has_been_released
+		button_has_been_released = True
+	button.when_released = button_release
+	def wait():
+		global button_has_been_released
+		button.wait_for_press()
+		if button_has_been_released:
+			button_has_been_released = False
+		else:
+			# This sleep helps us avoid exceeding the maximum recursion depth.
+			# With the default recursion depth of 1000, the user would have to
+			# press and hold the button for 0.1*1000=100 seconds in order to
+			# exceed the maximum recursion depth.
+			time.sleep(0.1)
+			wait()
 except ModuleNotFoundError:
 	raspberry = False
 	on_air = lambda: print('Now recording')
