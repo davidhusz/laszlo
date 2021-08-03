@@ -3,10 +3,10 @@ import threading, time
 
 
 __all__ = [
-    'Event',
-    'Time',
-    'ButtonPress',
-    'Boot'
+	'Event',
+	'Time',
+	'ButtonPress',
+	'Boot'
 ]
 
 
@@ -83,16 +83,16 @@ class Time(Event):
 
 
 class ButtonPress(Event):
-    '''
-    An event that fires each time a button/footswitch is pressed.
-    '''
-    pass
+	'''
+	An event that fires each time a button/footswitch is pressed.
+	'''
+	pass
 
 
 class Boot(Event):
-    '''
-    An event that fires when the program starts.
-    '''
+	'''
+	An event that fires when the program starts.
+	'''
 	# TODO: raise Error if instantiated multiple times
 	pass
 
